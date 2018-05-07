@@ -4,8 +4,8 @@ import time
 import torch
 import torch.nn as nn
 
-from dataset.factory import dataset_factory
 import nets.nets as nets
+from dataset.factory import dataset_factory
 
 
 class Arg(object):
@@ -15,11 +15,11 @@ class Arg(object):
 
 
 args = Arg()
-args.batch_size = 25
+args.batch_size = 50
 args.workers = 1
 args.lr = 0.01
 args.weight_decay = 1e-4
-args.epoch = 10
+args.epoch = 200
 args.print_freq = 1
 args.classes = 3
 args.train_dir = "/home/jt/codes/bs/gp/data/anzhen/merged2"
@@ -57,13 +57,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
     data_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
-    correct = []
-    wrong = []
-    miss = []
-    for i in range(args.classes):
-        correct.append(0)
-        wrong.append(0)
-        miss.append(0)
+    confusion_matrix = torch.zeros((args.classes, args.classes))
 
     # switch to train mode
     model.train()
@@ -85,7 +79,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
-        prec1, = accuracy(output.data, target, topk=(1,), correct=correct, wrong=wrong, miss=miss)
+        prec1, = accuracy(output.data, target, topk=(1,), confusion_matrix=confusion_matrix)
         losses.update(loss.data[0], input.size(0))
         top1.update(prec1[0], input.size(0))
 
@@ -98,9 +92,6 @@ def train(train_loader, model, criterion, optimizer, epoch):
         batch_time.update(time.time() - end)
         end = time.time()
 
-        if i < 10 and epoch > 0:
-            print('here')
-
         if i % args.print_freq == 0:
             print('Epoch: [{0}][{1}/{2}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
@@ -109,22 +100,14 @@ def train(train_loader, model, criterion, optimizer, epoch):
                   'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'.format(
                 epoch, i, len(train_loader), batch_time=batch_time,
                 data_time=data_time, loss=losses, top1=top1))
-            print('Correct predictions: \t{}'.format(correct))
-            print('Wrong predictions: \t\t{}'.format(wrong))
-            print('Miss cases: \t\t\t{}'.format(miss))
+            print(confusion_matrix)
 
 
 def validate(val_loader, model, criterion):
     batch_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
-    correct = []
-    wrong = []
-    miss = []
-    for i in range(args.classes):
-        correct.append(0)
-        wrong.append(0)
-        miss.append(0)
+    confusion_matrix = torch.zeros((args.classes, args.classes))
 
     # switch to evaluate mode
     model.eval()
@@ -143,10 +126,9 @@ def validate(val_loader, model, criterion):
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
-        prec1,  = accuracy(output.data, target, topk=(1, ), correct=correct, wrong=wrong, miss=miss)
+        prec1,  = accuracy(output.data, target, topk=(1, ), confusion_matrix=confusion_matrix)
         losses.update(loss.data[0], input.size(0))
         top1.update(prec1[0], input.size(0))
-
 
         # measure elapsed time
         batch_time.update(time.time() - end)
@@ -159,20 +141,16 @@ def validate(val_loader, model, criterion):
                   'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'.format(
                    i, len(val_loader), batch_time=batch_time, loss=losses,
                    top1=top1))
-            print('Correct predictions: \t{}'.format(correct))
-            print('Wrong predictions: \t\t{}'.format(wrong))
-            print('Miss cases: \t\t\t{}'.format(miss))
+            print(confusion_matrix)
 
     print(' * Prec@1 {top1.avg:.3f}'
           .format(top1=top1))
-    print('Correct predictions: \t{}'.format(correct))
-    print('Wrong predictions: \t\t{}'.format(wrong))
-    print('Miss cases: \t\t\t{}'.format(miss))
+    print(confusion_matrix)
 
     return top1.avg
 
 
-def accuracy(output, target, topk=(1,), correct=None, wrong=None, miss=None):
+def accuracy(output, target, topk=(1,), confusion_matrix=None):
     """Computes the precision@k for the specified values of k"""
     maxk = max(topk)
     batch_size = target.size(0)
@@ -180,13 +158,9 @@ def accuracy(output, target, topk=(1,), correct=None, wrong=None, miss=None):
     _, pred = output.topk(maxk, 1, True, True)
     pred = pred.t()
     pred_correct = pred.eq(target.view(1, -1).expand_as(pred))
-    if correct is not None:
-        for i in range(pred_correct.size(1)):
-            if pred_correct[0, i] == 1:
-                correct[pred[0, i]] += 1
-            else:
-                wrong[pred[0, i]] += 1
-                miss[target[i]] += 1
+    if confusion_matrix is not None:
+        for i in range(pred.size(1)):
+            confusion_matrix[target[i]][pred[0, i]] += 1
 
     res = []
     for k in topk:

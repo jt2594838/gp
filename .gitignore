@@ -2,7 +2,7 @@
 /venv
 /data
 /.idea
-
+/res_anzhen
 src/nets/__pycache__/
 
 *.pyc
