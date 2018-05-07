@@ -14,7 +14,6 @@ def get_dataset_100(dir, train=True):
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             normalize,
-
         ]),
         download=True)
     return dataset

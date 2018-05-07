@@ -17,18 +17,21 @@ class Arg(object):
 args = Arg()
 args.batch_size = 25
 args.workers = 1
-args.lr = 0.05
+args.lr = 0.01
 args.weight_decay = 1e-4
 args.epoch = 10
 args.print_freq = 1
-args.classes = 10
-args.train_dir = "./data/train_data/"
-args.val_dir = "./data/val_data/"
-args.dataset = 'CIFAR_10'
-args.model = 'ResNet'
+args.classes = 3
+args.train_dir = "/home/jt/codes/bs/gp/data/anzhen/merged2"
+args.val_dir = "/home/jt/codes/bs/gp/data/anzhen/merged2"
+args.dataset = 'anzhen'
+args.in_channels = 1
+args.pretrained = False
+args.model = 'ResNet101'
 args.momentum = 0.9
-args.model_path = './models/'
+args.model_path = '/home/jt/codes/bs/gp/res_anzhen/model'
 args.use_cuda = True
+
 
 
 class AverageMeter(object):
@@ -54,7 +57,13 @@ def train(train_loader, model, criterion, optimizer, epoch):
     data_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
-    top5 = AverageMeter()
+    correct = []
+    wrong = []
+    miss = []
+    for i in range(args.classes):
+        correct.append(0)
+        wrong.append(0)
+        miss.append(0)
 
     # switch to train mode
     model.train()
@@ -66,7 +75,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
         target = target.cuda(async=True)
         input_var = torch.autograd.Variable(input)
-        target_var = torch.autograd.Variable(target)
+        target_var = torch.autograd.Variable(target).squeeze()
         if args.use_cuda:
             input_var = input_var.cuda()
             target_var = target_var.cuda()
@@ -76,10 +85,9 @@ def train(train_loader, model, criterion, optimizer, epoch):
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
-        prec1, prec5 = accuracy(output.data, target, topk=(1, 5))
+        prec1, = accuracy(output.data, target, topk=(1,), correct=correct, wrong=wrong, miss=miss)
         losses.update(loss.data[0], input.size(0))
         top1.update(prec1[0], input.size(0))
-        top5.update(prec5[0], input.size(0))
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
@@ -90,22 +98,33 @@ def train(train_loader, model, criterion, optimizer, epoch):
         batch_time.update(time.time() - end)
         end = time.time()
 
+        if i < 10 and epoch > 0:
+            print('here')
+
         if i % args.print_freq == 0:
             print('Epoch: [{0}][{1}/{2}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                  'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'
-                  'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'.format(
+                  'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'.format(
                 epoch, i, len(train_loader), batch_time=batch_time,
-                data_time=data_time, loss=losses, top1=top1, top5=top5))
+                data_time=data_time, loss=losses, top1=top1))
+            print('Correct predictions: \t{}'.format(correct))
+            print('Wrong predictions: \t\t{}'.format(wrong))
+            print('Miss cases: \t\t\t{}'.format(miss))
 
 
 def validate(val_loader, model, criterion):
     batch_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
-    top5 = AverageMeter()
+    correct = []
+    wrong = []
+    miss = []
+    for i in range(args.classes):
+        correct.append(0)
+        wrong.append(0)
+        miss.append(0)
 
     # switch to evaluate mode
     model.eval()
@@ -124,10 +143,10 @@ def validate(val_loader, model, criterion):
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
-        prec1, prec5 = accuracy(output.data, target, topk=(1, 5))
+        prec1,  = accuracy(output.data, target, topk=(1, ), correct=correct, wrong=wrong, miss=miss)
         losses.update(loss.data[0], input.size(0))
         top1.update(prec1[0], input.size(0))
-        top5.update(prec5[0], input.size(0))
+
 
         # measure elapsed time
         batch_time.update(time.time() - end)
@@ -137,29 +156,41 @@ def validate(val_loader, model, criterion):
             print('Test: [{0}/{1}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                  'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'
-                  'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'.format(
+                  'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'.format(
                    i, len(val_loader), batch_time=batch_time, loss=losses,
-                   top1=top1, top5=top5))
+                   top1=top1))
+            print('Correct predictions: \t{}'.format(correct))
+            print('Wrong predictions: \t\t{}'.format(wrong))
+            print('Miss cases: \t\t\t{}'.format(miss))
 
-    print(' * Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f}'
-          .format(top1=top1, top5=top5))
+    print(' * Prec@1 {top1.avg:.3f}'
+          .format(top1=top1))
+    print('Correct predictions: \t{}'.format(correct))
+    print('Wrong predictions: \t\t{}'.format(wrong))
+    print('Miss cases: \t\t\t{}'.format(miss))
 
-    return top1.avg, top5.avg
+    return top1.avg
 
 
-def accuracy(output, target, topk=(1,)):
+def accuracy(output, target, topk=(1,), correct=None, wrong=None, miss=None):
     """Computes the precision@k for the specified values of k"""
     maxk = max(topk)
     batch_size = target.size(0)
 
     _, pred = output.topk(maxk, 1, True, True)
     pred = pred.t()
-    correct = pred.eq(target.view(1, -1).expand_as(pred))
+    pred_correct = pred.eq(target.view(1, -1).expand_as(pred))
+    if correct is not None:
+        for i in range(pred_correct.size(1)):
+            if pred_correct[0, i] == 1:
+                correct[pred[0, i]] += 1
+            else:
+                wrong[pred[0, i]] += 1
+                miss[target[i]] += 1
 
     res = []
     for k in topk:
-        correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
+        correct_k = pred_correct[:k].view(-1).float().sum(0, keepdim=True)
         res.append(correct_k.mul_(100.0 / batch_size))
     return res
 
@@ -168,10 +199,10 @@ def main():
     if not os.path.exists(args.train_dir):
         os.makedirs(args.train_dir)
 
-    model = nets.net_factory[args.model](args.classes)
+    model = nets.net_factory[args.model](args.classes, args.pretrained, args.in_channels, classify=True)
     train_dataset = dataset_factory[args.dataset](args.train_dir, True)
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=False,
+        train_dataset, batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=False)
 
     criterion = nn.CrossEntropyLoss()
@@ -188,13 +219,13 @@ def main():
 
     val_dataset = dataset_factory[args.dataset](args.val_dir, False)
     val_loader = torch.utils.data.DataLoader(
-        val_dataset, batch_size=args.batch_size, shuffle=False,
+        val_dataset, batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=False)
 
-    p1, p5 = validate(val_loader, model, criterion)
+    p1 = validate(val_loader, model, criterion)
 
-    filename = '{0}_{1}_{2}_{3}_{4}_{5}.pkl'.format(args.model, args.dataset, str(args.classes), str(args.epoch),
-                                                    str(p1), str(p5))
+    filename = '{0}_{1}_{2}_{3}_{4}.pkl'.format(args.model, args.dataset, str(args.classes), str(args.epoch),
+                                                    str(p1))
     path = os.path.join(args.model_path, filename)
     if not os.path.exists(args.model_path):
         os.makedirs(args.model_path)

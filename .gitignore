@@ -1,2 +1,8 @@
 /res
 /venv
+/data
+/.idea
+
+src/nets/__pycache__/
+
+*.pyc
