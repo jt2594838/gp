@@ -13,7 +13,7 @@ import process.apply as apply
 
 class Arg(object):
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__()
 
 

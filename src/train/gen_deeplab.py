@@ -9,7 +9,7 @@ from dataset.factory import dataset_factory
 
 class Arg(object):
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__()
 
 

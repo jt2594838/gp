@@ -11,14 +11,14 @@ from dataset.MapTrainDataset import MapTrainDataset
 
 class Arg(object):
 
-    def __init__(self) -> None:
+    def __init__(self):
         super().__init__()
 
 
 args = Arg()
-args.batch_size = 10
+args.batch_size = 15
 args.workers = 1
-args.lr = 0.005
+args.lr = 0.01
 args.weight_decay = 1e-4
 args.epoch = 50
 args.print_freq = 1
@@ -153,7 +153,7 @@ def main():
 
     train_dataset = MapTrainDataset(args.train_dir, True, args.preprocess)
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=False,
+        train_dataset, batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=False)
 
     criterion = nn.MSELoss()
