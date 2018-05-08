@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import os
 
-import process.apply as apply
+from process.apply import apply_avg
 
 
 class Arg(object):
@@ -14,7 +14,7 @@ class Arg(object):
 
 args = Arg()
 args.map_path = '/home/jt/codes/bs/nb/src/train/maps/ResNet_CIFAR_10_0_10_avg_greed.h5'
-args.apply_method = apply.apply_avg
+args.apply_method = apply_avg
 args.apply_method_name = "avg"
 args.print_frequency = 100
 

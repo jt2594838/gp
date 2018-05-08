@@ -4,10 +4,8 @@ import h5py as h5
 import torch
 import torch.nn as nn
 
-import dataset.factory as df
+from dataset.factory import dataset_factory
 import process.generate as gen
-
-dataset_factory = df.dataset_factory
 
 
 class Arg(object):

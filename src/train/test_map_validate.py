@@ -4,11 +4,9 @@ import time
 import torch
 import torch.nn as nn
 
-import dataset.factory as df
-import process.apply as apply
+from dataset.factory import dataset_factory
+from process.apply import apply_loss4D
 from dataset.MapValDataset import MapValDataset
-
-dataset_factory = df.dataset_factory
 
 
 class Arg(object):
@@ -25,7 +23,7 @@ args.val_dir = "./data/val_data/"
 args.map_dir = "/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_unpreprocessed_0.09455910949409008_VGG16_0.9_79.11_98.59_validate.h5"
 args.dataset = 'CIFAR_10'
 args.model_path = '/home/jt/codes/bs/nb/src/train/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl'
-args.apply_method = apply.apply_loss4D
+args.apply_method = apply_loss4D
 args.threshold = 0.99
 args.use_cuda = True
 args.gpu_no = 0

@@ -4,7 +4,7 @@ import time
 import torch
 import torch.nn as nn
 
-import nets.nets as nets
+from nets.nets import net_factory
 from dataset.factory import dataset_factory
 
 
@@ -171,7 +171,7 @@ def main():
     if not os.path.exists(args.train_dir):
         os.makedirs(args.train_dir)
 
-    model = nets.net_factory[args.model](args.classes, args.pretrained, args.in_channels, classify=True)
+    model = net_factory[args.model](args.classes, args.pretrained, args.in_channels, classify=True)
     train_dataset = dataset_factory[args.dataset](args.train_dir, True)
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=True,

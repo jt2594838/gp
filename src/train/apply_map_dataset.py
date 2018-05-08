@@ -1,10 +1,10 @@
 import h5py as h5
-import torch
 import numpy as np
-import os
+import torch
 
-import process.apply as apply
 from dataset.factory import dataset_factory
+from process.apply import apply_loss
+
 
 class Arg(object):
 
@@ -17,7 +17,7 @@ args.dataset = 'CIFAR_10'
 args.dataset_dir = '/home/jt/codes/bs/nb/src/train/data/train_data'
 args.map_dir = '/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_0.09455910949409008_unpreprocessed_VGG16_train_l10000.h5'
 args.train = True
-args.apply_method = apply.apply_loss
+args.apply_method = apply_loss
 args.limit = 5000
 args.print_frequency = 100
 
