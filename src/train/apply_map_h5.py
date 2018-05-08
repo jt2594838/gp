@@ -1,22 +1,18 @@
-import h5py as h5
-import torch
-import numpy as np
+import argparse
 import os
 
-from process.apply import apply_avg
+import h5py as h5
+import numpy as np
+import torch
 
+from process.apply import apply_methods
 
-class Arg(object):
+parser = argparse.ArgumentParser(description='Train a basic classifier')
+parser.add_argument('-apply_method_name', type=str, default='apply_loss4D')
+parser.add_argument('-print_freq', type=int, default=100)
 
-    def __init__(self):
-        super().__init__()
-
-
-args = Arg()
-args.map_path = '/home/jt/codes/bs/nb/src/train/maps/ResNet_CIFAR_10_0_10_avg_greed.h5'
-args.apply_method = apply_avg
-args.apply_method_name = "avg"
-args.print_frequency = 100
+args = parser.parse_args()
+args.apply_method = apply_methods[args.apply_method_name]
 
 
 def main():
@@ -36,7 +32,7 @@ def main():
     for i in range(pic_cnt):
         temp = args.apply_method(x[i, :, :, :], map[i, :, :])
         applied[i, :, :, :] = temp[:, :, :]
-        if (i + 1) % args.print_frequency == 0:
+        if (i + 1) % args.print_freq == 0:
             print('%d pics applied' % (i + 1))
     output.create_dataset("applied", data=applied.numpy())
 

@@ -1,3 +1,4 @@
+import argparse
 import os
 import time
 
@@ -8,35 +9,34 @@ from dataset.H5Dataset import H5Dataset
 from dataset.MapValDataset import MapValDataset
 from dataset.factory import dataset_factory
 import nets.nets as nets
-import process.apply as apply
+from process.apply import apply_methods
 
+parser = argparse.ArgumentParser(description='Train a basic classifier')
+parser.add_argument('-batch_size', type=int, default=25)
+parser.add_argument('-workers', type=int, default=1)
+parser.add_argument('-lr', type=float, default=0.01)
+parser.add_argument('-weight_decay', type=float, default=1e-4)
+parser.add_argument('-epoch', type=int, default=200)
+parser.add_argument('-print_freq', type=int, default=1)
+parser.add_argument('-classes', type=int, default=3)
+parser.add_argument('-train_dir', type=str, default="/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_0.09455910949409008_unpreprocessed_VGG16_train_l5000.h5.applied")
+parser.add_argument('-val_dir', type=str, default="./data/val_data/")
+parser.add_argument('-dataset', type=str, default='CIFAR_10')
+parser.add_argument('-in_channels', type=int, default=1)
+parser.add_argument('-pretrained', type=bool, default=False)
+parser.add_argument('-model', type=str, default='ResNet101')
+parser.add_argument('-momentum', type=float, default=0.9)
+parser.add_argument('-model_path', type=str, default='/home/jt/codes/bs/nb/src/train/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl')
+parser.add_argument('-val_map_dir', type=str, default='/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_unpreprocessed_0.09455910949409008_VGG16_0.9_79.11_98.59_validate.h5')
+parser.add_argument('-use_cuda', type=bool, default=True)
+parser.add_argument('-gpu_no', type=str, default='0')
+parser.add_argument('-description', type=str, default='l5000')
+parser.add_argument('-preprocess', type=bool, default=False)
+parser.add_argument('-threshold', type=float, default=0.9)
+parser.add_argument('-apply_method', type=str, default='apply_loss4D')
 
-class Arg(object):
-
-    def __init__(self):
-        super().__init__()
-
-
-args = Arg()
-args.batch_size = 25
-args.workers = 1
-args.lr = 0.05
-args.weight_decay = 1e-4
-args.epoch = 100
-args.print_freq = 1
-args.classes = 10
-args.train_dir = "/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_0.09455910949409008_unpreprocessed_VGG16_train_l5000.h5.applied"
-args.val_dir = "./data/val_data/"
-args.dataset = 'CIFAR_10'
-args.model = 'VGG16'
-args.momentum = 0.9
-args.model_path = './models/'
-args.val_map_dir = '/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_unpreprocessed_0.09455910949409008_VGG16_0.9_79.11_98.59_validate.h5'
-args.apply_method = apply.apply_loss4D
-args.threshold = 0.9
-args.description = 'l5000'
-args.use_cuda = True
-args.gpu_no = "0"
+args = parser.parse_args()
+args.apply_method = apply_methods[args.apply_method]
 
 
 class AverageMeter(object):

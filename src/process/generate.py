@@ -180,6 +180,18 @@ def avg_processor(tensor):
     return tensor
 
 
+gen_methods = {
+    'greed': gen_sensitive_map_rect_greed,
+    'super_pixel_zero': gen_map_superpixel_zero,
+}
+
+processors = {
+    'zero': all_zero_processor,
+    'one': all_one_processor,
+    'avg': avg_processor,
+}
+
+
 if __name__ == '__main__':
     times = 1000
     w1 = 0      # succeeded times of lowering the loss

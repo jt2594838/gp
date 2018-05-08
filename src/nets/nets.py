@@ -1,6 +1,5 @@
+import Resnet, VGG
 import torch.nn as nn
-
-from nets import Resnet, VGG
 
 
 def get_ResNet50(num_classes, pretrained=True, in_channels=3, classify=True):

@@ -3,35 +3,32 @@ import time
 
 import torch
 import torch.nn as nn
+import argparse
 
 from nets.nets import net_factory
 from dataset.factory import dataset_factory
 
+parser = argparse.ArgumentParser(description='Train a basic classifier')
+parser.add_argument('-batch_size', type=int, default=50)
+parser.add_argument('-workers', type=int, default=1)
+parser.add_argument('-lr', type=float, default=0.01)
+parser.add_argument('-weight_decay', type=float, default=1e-4)
+parser.add_argument('-epoch', type=int, default=200)
+parser.add_argument('-print_freq', type=int, default=1)
+parser.add_argument('-classes', type=int, default=3)
+parser.add_argument('-train_dir', type=str, default="/home/jt/codes/bs/gp/data/anzhen/merged2")
+parser.add_argument('-val_dir', type=str, default="/home/jt/codes/bs/gp/data/anzhen/merged2")
+parser.add_argument('-dataset', type=str, default='anzhen')
+parser.add_argument('-in_channels', type=int, default=1)
+parser.add_argument('-pretrained', type=bool, default=False)
+parser.add_argument('-model', type=str, default='ResNet101')
+parser.add_argument('-momentum', type=float, default=0.9)
+parser.add_argument('-model_path', type=str, default='/home/jt/codes/bs/gp/res_anzhen/model')
+parser.add_argument('-use_cuda', type=bool, default=True)
+parser.add_argument('-gpu_no', type=str, default='0')
 
-class Arg(object):
 
-    def __init__(self):
-        super().__init__()
-
-
-args = Arg()
-args.batch_size = 50
-args.workers = 1
-args.lr = 0.01
-args.weight_decay = 1e-4
-args.epoch = 200
-args.print_freq = 1
-args.classes = 3
-args.train_dir = "/home/jt/codes/bs/gp/data/anzhen/merged2"
-args.val_dir = "/home/jt/codes/bs/gp/data/anzhen/merged2"
-args.dataset = 'anzhen'
-args.in_channels = 1
-args.pretrained = False
-args.model = 'ResNet101'
-args.momentum = 0.9
-args.model_path = '/home/jt/codes/bs/gp/res_anzhen/model'
-args.use_cuda = True
-args.gpu_no = "0"
+args = parser.parse_args()
 
 
 class AverageMeter(object):

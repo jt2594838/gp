@@ -1,25 +1,23 @@
+import argparse
+
 import h5py as h5
 import numpy as np
 import torch
 
 from dataset.factory import dataset_factory
-from process.apply import apply_loss
+from process.apply import apply_methods
 
+parser = argparse.ArgumentParser(description='Train a basic classifier')
+parser.add_argument('-dataset', type=str, default='CIFAR_10')
+parser.add_argument('-dataset_dir', type=str, default='/home/jt/codes/bs/nb/src/train/data/train_data')
+parser.add_argument('-map_dir', type=str, default='/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_0.09455910949409008_unpreprocessed_VGG16_train_l10000.h5')
+parser.add_argument('-apply_method_name', type=str, default='apply_loss4D')
+parser.add_argument('-train', type=bool, default=True)
+parser.add_argument('-limit', type=int, default=5000)
+parser.add_argument('-print_freq', type=int, default=100)
 
-class Arg(object):
-
-    def __init__(self):
-        super().__init__()
-
-
-args = Arg()
-args.dataset = 'CIFAR_10'
-args.dataset_dir = '/home/jt/codes/bs/nb/src/train/data/train_data'
-args.map_dir = '/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_0.09455910949409008_unpreprocessed_VGG16_train_l10000.h5'
-args.train = True
-args.apply_method = apply_loss
-args.limit = 5000
-args.print_frequency = 100
+args = parser.parse_args()
+args.apply_method = apply_methods[args.apply_method_name]
 
 
 def apply(dataset, map, method):

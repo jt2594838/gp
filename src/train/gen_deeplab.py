@@ -1,3 +1,4 @@
+import argparse
 import os
 import time
 
@@ -7,27 +8,24 @@ import h5py as h5
 from dataset.factory import dataset_factory
 
 
-class Arg(object):
+parser = argparse.ArgumentParser(description='Train a basic classifier')
+parser.add_argument('-preint_freq', type=int, default=100)
+parser.add_argument('-classes', type=int, default=1)
+parser.add_argument('-data_dir', type=str, default="./data/train_data/")
+parser.add_argument('-train_dir', type=str, default="/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_0.09455910949409008_unpreprocessed_VGG16_train_l5000.h5.applied")
+parser.add_argument('-dataset', type=str, default='CIFAR_10')
+parser.add_argument('-model', type=str, default='DeeplabS')
+parser.add_argument('-model_path', type=str, default='/home/jt/codes/bs/nb/src/train/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl')
+parser.add_argument('-map_path', type=str, default='/home/jt/codes/bs/nb/src/train/maps')
+parser.add_argument('-train', type=bool, default=True)
+parser.add_argument('-limit', type=int, default=50000)
+parser.add_argument('-description', type=str, default='0.09455910949409008_unpreprocessed_VGG16')
+parser.add_argument('-use_cuda', type=bool, default=True)
+parser.add_argument('-gpu_no', type=str, default='0')
 
-    def __init__(self):
-        super().__init__()
-
-
-args = Arg()
-args.print_freq = 100
-args.classes = 1
-args.data_dir = "./data/train_data/"
-args.dataset = 'CIFAR_10'
-args.model = 'DeeplabS'
-args.model_path = '/home/jt/codes/bs/nb/src/train/models/deeplabS2048_CIFAR_5000_zero_1_10_0.09455910949409008_unpreprocessed_VGG16.pkl'
-args.map_path = '/home/jt/codes/bs/nb/src/train/maps'
-args.train = True
-args.limit = 5000
-args.description = '0.09455910949409008_unpreprocessed_VGG16'
+args = parser.parse_args()
 args.description += '_train' if args.train else '_validate'
 args.description += '_l' + str(args.limit)
-args.use_cuda = True
-args.gpu_no = "0"
 
 
 class AverageMeter(object):

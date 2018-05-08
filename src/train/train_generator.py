@@ -1,40 +1,38 @@
+from nets.ConvDeconv import ConvDeconv
+from nets.deeplab import Deeplab
+from dataset.MapTrainDataset import MapTrainDataset
+
 import os
 import time
 
 import torch
 import torch.nn as nn
-
-from nets.ConvDeconv import ConvDeconv
-from nets.deeplab import Deeplab
-from dataset.MapTrainDataset import MapTrainDataset
+import argparse
 
 
-class Arg(object):
+parser = argparse.ArgumentParser(description='Train a basic classifier')
+parser.add_argument('-batch_size', type=int, default=50)
+parser.add_argument('-workers', type=int, default=1)
+parser.add_argument('-lr', type=float, default=0.01)
+parser.add_argument('-weight_decay', type=float, default=1e-4)
+parser.add_argument('-epoch', type=int, default=200)
+parser.add_argument('-print_freq', type=int, default=1)
+parser.add_argument('-classes', type=int, default=3)
+parser.add_argument('-train_dir', type=str, default="/home/jt/codes/bs/gp/res_anzhen/train_map/ResNet_anzhen_0_4300_zero_greed_rect_quantity.h5")
+parser.add_argument('-val_dir', type=str, default="/home/jt/codes/bs/gp/res_anzhen/train_map/ResNet_anzhen_0_4300_zero_greed_rect_quantity.h5")
+parser.add_argument('-dataset', type=str, default='anzhen_4300_zero')
+parser.add_argument('-in_channels', type=int, default=1)
+parser.add_argument('-pretrained', type=bool, default=False)
+parser.add_argument('-model', type=str, default='ConvDeconv')
+parser.add_argument('-momentum', type=float, default=0.9)
+parser.add_argument('-model_path', type=str, default='/home/jt/codes/bs/gp/res_anzhen/model')
+parser.add_argument('-use_cuda', type=bool, default=True)
+parser.add_argument('-gpu_no', type=str, default='0')
+parser.add_argument('-description', type=str, default='unpreprocessed_ResNet')
+parser.add_argument('-preprocess', type=bool, default=False)
 
-    def __init__(self):
-        super().__init__()
 
-
-args = Arg()
-args.batch_size = 15
-args.workers = 1
-args.lr = 0.01
-args.weight_decay = 1e-4
-args.epoch = 50
-args.print_freq = 1
-args.classes = 1
-args.train_dir = "/home/jt/codes/bs/gp/res_anzhen/train_map/ResNet_anzhen_0_4300_zero_greed_rect_quantity.h5"
-args.val_dir = "/home/jt/codes/bs/gp/res_anzhen/train_map/ResNet_anzhen_0_4300_zero_greed_rect_quantity.h5"
-args.dataset = 'anzhen_4300_zero'
-args.momentum = 0.9
-args.model = 'Deeplab'
-args.model_path = '/home/jt/codes/bs/gp/res_anzhen/generator_model'
-args.description = 'unpreprocessed_ResNet'
-args.preprocess = False
-args.usecuda = True
-args.in_channels = 1
-args.pretrained = False
-args.gpu_no = "0"
+args = parser.parse_args()
 
 
 class AverageMeter(object):

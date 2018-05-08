@@ -1,3 +1,4 @@
+import argparse
 import os
 import time
 
@@ -5,28 +6,35 @@ import torch
 import torch.nn as nn
 
 from dataset.factory import dataset_factory
-from process.apply import apply_loss4D
+from process.apply import apply_methods
 from dataset.MapValDataset import MapValDataset
 
 
-class Arg(object):
+parser = argparse.ArgumentParser(description='Train a basic classifier')
+parser.add_argument('-batch_size', type=int, default=50)
+parser.add_argument('-workers', type=int, default=1)
+parser.add_argument('-lr', type=float, default=0.01)
+parser.add_argument('-weight_decay', type=float, default=1e-4)
+parser.add_argument('-epoch', type=int, default=200)
+parser.add_argument('-print_freq', type=int, default=1)
+parser.add_argument('-classes', type=int, default=3)
+parser.add_argument('-map_dir', type=str, default="/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_unpreprocessed_0.09455910949409008_VGG16_0.9_79.11_98.59_validate.h5")
+parser.add_argument('-val_dir', type=str, default="./data/val_data/")
+parser.add_argument('-dataset', type=str, default='CIFAR_10')
+parser.add_argument('-in_channels', type=int, default=1)
+parser.add_argument('-pretrained', type=bool, default=False)
+parser.add_argument('-model', type=str, default='ResNet101')
+parser.add_argument('-momentum', type=float, default=0.9)
+parser.add_argument('-model_path', type=str, default='/home/jt/codes/bs/nb/src/train/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl')
+parser.add_argument('-use_cuda', type=bool, default=True)
+parser.add_argument('-gpu_no', type=str, default='0')
+parser.add_argument('-description', type=str, default='unpreprocessed_ResNet')
+parser.add_argument('-preprocess', type=bool, default=False)
+parser.add_argument('-threshold', type=float, default=0.9)
+parser.add_argument('-apply_method', type=str, default='apply_loss4D')
 
-    def __init__(self):
-        super().__init__()
-
-
-args = Arg()
-args.batch_size = 25
-args.workers = 1
-args.print_freq = 1
-args.val_dir = "./data/val_data/"
-args.map_dir = "/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_unpreprocessed_0.09455910949409008_VGG16_0.9_79.11_98.59_validate.h5"
-args.dataset = 'CIFAR_10'
-args.model_path = '/home/jt/codes/bs/nb/src/train/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl'
-args.apply_method = apply_loss4D
-args.threshold = 0.99
-args.use_cuda = True
-args.gpu_no = 0
+args = parser.parse_args()
+args.apply_method = apply_methods[args.apply_method]
 
 
 class AverageMeter(object):

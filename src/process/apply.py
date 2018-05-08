@@ -36,3 +36,12 @@ def apply_avg(pic, avg_map):
     if avg_map.mean() > 0.5:
         ret[:] = torch.mean(ret)
     return ret
+
+
+apply_methods = {
+    'apply_loss': apply_loss,
+    'apply_loss4D': apply_gain4D,
+    'apply_gain': apply_gain,
+    'apply_gain4D': apply_gain4D,
+    'apply_avg': apply_avg,
+}

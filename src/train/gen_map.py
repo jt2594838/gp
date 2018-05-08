@@ -1,3 +1,4 @@
+import argparse
 import os
 
 import h5py as h5
@@ -5,36 +6,35 @@ import torch
 import torch.nn as nn
 
 from dataset.factory import dataset_factory
-import process.generate as gen
+from process.apply import apply_methods
+from process.generate import gen_methods, processors
 
+parser = argparse.ArgumentParser(description='Train a basic classifier')
+parser.add_argument('-batch_size', type=int, default=1)
+parser.add_argument('-workers', type=int, default=1)
+parser.add_argument('-train_dir', type=str, default="/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_0.09455910949409008_unpreprocessed_VGG16_train_l5000.h5.applied")
+parser.add_argument('-dataset', type=str, default='CIFAR_10')
+parser.add_argument('-model_path', type=str, default='/home/jt/codes/bs/nb/src/train/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl')
+parser.add_argument('-model_name', type=str, default="ResNet")
+parser.add_argument('-use_cuda', type=bool, default=True)
+parser.add_argument('-gpu_no', type=str, default='0')
+parser.add_argument('-description', type=str, default='rect_quality')
+parser.add_argument('-apply_method', type=str, default='apply_loss4D')
+parser.add_argument('-size', type=int, default=8)
+parser.add_argument('-processor_name', type=str, default='zero')
+parser.add_argument('-gen_method_name', type=str, default='greed')
+parser.add_argument('-output_dir', type=str, default="/home/jt/codes/bs/gp/res_anzhen/train_map")
+parser.add_argument('-offset', type=int, default=0)
+parser.add_argument('-length', type=int, default=4300)
+parser.add_argument('-update_err', type=bool, default=True)
 
-class Arg(object):
-
-    def __init__(self):
-        super().__init__()
-
-
-args = Arg()
-args.model_path = "/home/jt/codes/bs/gp/res_anzhen/original_model/ResNet101_anzhen_3_200_98.35051569987819.pkl"
-args.model_name = "ResNet"
-args.dataset = "anzhen"
-args.train_dir = "/home/jt/codes/bs/gp/data/anzhen/merged2"
-args.batch_size = 1
-args.workers = 1
-args.size = (8, 8)
-args.window_processor = gen.all_zero_processor
-args.processor_name = 'zero'
-args.gen_method = gen.gen_sensitive_map_rect_greed
-args.gen_method_name = 'greed'
-args.output_dir = "/home/jt/codes/bs/gp/res_anzhen/train_map"
-args.offset = 0
-args.length = 4300
-args.description = 'rect_quality'
+args = parser.parse_args()
+args.apply_method = apply_methods[args.apply_method]
+args.size = (args.size, args.size)
+args.window_processor = processors[args.processor_name]
+args.gen_method = gen_methods[args.gen_method_name]
 args.output_name = ("%s_%s_%d_%d_%s_%s_%s.h5" % (args.model_name, args.dataset, args.offset, args.length,
                                               args.processor_name, args.gen_method_name, args.description))
-args.use_cuda = True
-args.update_err = True
-args.gpu_no = "0"
 
 
 def main():
