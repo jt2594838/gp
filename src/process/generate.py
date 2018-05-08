@@ -4,7 +4,7 @@ import torch
 from torch.autograd import Variable
 from skimage.segmentation import slic
 
-channel_num = 3
+channel_num = 1
 
 
 def gen_sensitive_map_rect(model, pic, label, size, criterion, window_processor):
@@ -20,7 +20,7 @@ def gen_sensitive_map_rect(model, pic, label, size, criterion, window_processor)
         5. return the temp picture
     """
     map = torch.zeros(pic.size()[1:3])
-    window_tensor = torch.zeros(channel_num, size[0], size[1])
+    window_tensor = torch.zeros(pic.size()[1], size[0], size[1])
     curr_x = 0
     curr_y = 0
     xlimit = pic.size(1)
@@ -58,7 +58,7 @@ def gen_sensitive_map_rect_greed(model, pic, label, size, criterion, window_proc
         5. return the temp picture
     """
     map = torch.zeros((1, pic.size()[2], pic.size()[3]))
-    window_tensor = torch.zeros(channel_num, size[0], size[1])
+    window_tensor = torch.zeros(pic.size()[1], size[0], size[1])
     curr_x = 0
     curr_y = 0
     xlimit = pic.size(2)

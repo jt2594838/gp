@@ -27,6 +27,7 @@ args.description = '0.09455910949409008_unpreprocessed_VGG16'
 args.description += '_train' if args.train else '_validate'
 args.description += '_l' + str(args.limit)
 args.use_cuda = True
+args.gpu_no = "0"
 
 
 class AverageMeter(object):
@@ -88,6 +89,7 @@ def main():
 
     model = torch.load(args.model_path)
     if args.use_cuda:
+        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
         model = model.cuda()
     train_dataset = dataset_factory[args.dataset](args.data_dir, args.train)
 

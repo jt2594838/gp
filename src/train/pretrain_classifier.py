@@ -31,7 +31,7 @@ args.model = 'ResNet101'
 args.momentum = 0.9
 args.model_path = '/home/jt/codes/bs/gp/res_anzhen/model'
 args.use_cuda = True
-
+args.gpu_no = "0"
 
 
 class AverageMeter(object):
@@ -67,7 +67,6 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # measure data loading time
         data_time.update(time.time() - end)
 
-        target = target.cuda(async=True)
         input_var = torch.autograd.Variable(input)
         target_var = torch.autograd.Variable(target).squeeze()
         if args.use_cuda:
@@ -114,9 +113,8 @@ def validate(val_loader, model, criterion):
 
     end = time.time()
     for i, (input, target) in enumerate(val_loader):
-        target = target.cuda(async=True)
-        input_var = torch.autograd.Variable(input, volatile=True).cuda()
-        target_var = torch.autograd.Variable(target, volatile=True).cuda()
+        input_var = torch.autograd.Variable(input, volatile=True)
+        target_var = torch.autograd.Variable(target, volatile=True)
         if args.use_cuda:
             input_var = input_var.cuda()
             target_var = target_var.cuda()
@@ -185,6 +183,7 @@ def main():
                                 momentum=args.momentum,
                                 weight_decay=args.weight_decay)
     if args.use_cuda:
+        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
         model = model.cuda()
         criterion = criterion.cuda()
 

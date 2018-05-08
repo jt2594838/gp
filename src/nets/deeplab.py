@@ -48,10 +48,10 @@ class Decoder(nn.Module):
 
 
 class Deeplab(nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, in_channels=3, pretrained=True):
         super(Deeplab, self).__init__()
-        self.feature_extractor = resnet50(True)
-        self.feature_channels = 2048
+        self.feature_extractor = resnet50(pretrained=pretrained, in_channels=in_channels)
+        self.feature_channels = 1024
         self.encoder = Encoder(self.feature_channels, num_classes)
         self.decoder = Decoder(self.feature_channels, num_classes, num_classes)
         self.output = nn.Sigmoid()

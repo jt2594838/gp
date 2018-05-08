@@ -28,6 +28,7 @@ args.model_path = '/home/jt/codes/bs/nb/src/train/models/VGG16_CIFAR_10_10_10_78
 args.apply_method = apply.apply_loss4D
 args.threshold = 0.99
 args.use_cuda = True
+args.gpu_no = 0
 
 
 class AverageMeter(object):
@@ -135,6 +136,7 @@ def main():
     criterion = nn.CrossEntropyLoss()
 
     if args.use_cuda:
+        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
         model = model.cuda()
         criterion = criterion.cuda()
 

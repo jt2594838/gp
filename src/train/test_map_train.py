@@ -36,6 +36,7 @@ args.apply_method = apply.apply_loss4D
 args.threshold = 0.9
 args.description = 'l5000'
 args.use_cuda = True
+args.gpu_no = "0"
 
 
 class AverageMeter(object):
@@ -195,6 +196,7 @@ def main():
     criterion = nn.CrossEntropyLoss()
 
     if args.use_cuda:
+        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
         model = model.cuda()
         criterion = criterion.cuda()
 

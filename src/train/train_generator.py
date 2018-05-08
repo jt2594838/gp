@@ -20,18 +20,21 @@ args.batch_size = 10
 args.workers = 1
 args.lr = 0.005
 args.weight_decay = 1e-4
-args.epoch = 10
+args.epoch = 50
 args.print_freq = 1
 args.classes = 1
-args.train_dir = "/home/jt/codes/bs/nb/src/train/maps/VGG16_CIFAR_10_0_5000_zero.h5"
-args.val_dir = "/home/jt/codes/bs/nb/src/train/maps/VGG16_CIFAR_10_0_5000_zero.h5"
-args.dataset = 'CIFAR_5000_zero'
+args.train_dir = "/home/jt/codes/bs/gp/res_anzhen/train_map/ResNet_anzhen_0_4300_zero_greed_rect_quantity.h5"
+args.val_dir = "/home/jt/codes/bs/gp/res_anzhen/train_map/ResNet_anzhen_0_4300_zero_greed_rect_quantity.h5"
+args.dataset = 'anzhen_4300_zero'
 args.momentum = 0.9
 args.model = 'Deeplab'
-args.model_path = '/home/jt/codes/bs/nb/src/train/models'
-args.description = 'unpreprocessed_VGG16'
+args.model_path = '/home/jt/codes/bs/gp/res_anzhen/generator_model'
+args.description = 'unpreprocessed_ResNet'
 args.preprocess = False
 args.usecuda = True
+args.in_channels = 1
+args.pretrained = False
+args.gpu_no = "0"
 
 
 class AverageMeter(object):
@@ -141,9 +144,9 @@ def main():
         os.makedirs(args.train_dir)
 
     if args.model == 'Deeplab':
-        model = Deeplab(1)
+        model = Deeplab(1, args.in_channels, args.pretrained)
     elif args.model == 'ConvDeconv':
-        model = ConvDeconv(3)
+        model = ConvDeconv(args.in_channels)
     else:
         print('Illegal model name {0}'.format(args.model))
         exit(-1)
@@ -156,6 +159,7 @@ def main():
     criterion = nn.MSELoss()
 
     if args.usecuda:
+        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
         model = model.cuda()
         criterion = criterion.cuda()
 
