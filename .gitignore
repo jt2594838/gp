@@ -1,6 +1,7 @@
 /res
 /venv
 /data
+/src/scripts
 /.idea
 /res_anzhen
 src/nets/__pycache__/
