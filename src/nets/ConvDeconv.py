@@ -32,10 +32,12 @@ class ConvDeconv(nn.Module):
             nn.ConvTranspose2d(64, in_channels, kernel_size=3, stride=1, padding=1,
                       bias=False),
         )
+        self.output = nn.Sigmoid()
 
     def forward(self, x):
         x = self.encoder(x)
         x = self.decoder(x)
+        x = self.output(x)
         return x
 
 
