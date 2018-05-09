@@ -16,16 +16,14 @@ class ConvDeconvV2(nn.Module):
             nn.Conv2d(self.encoded_features, 256, kernel_size=1, stride=1, padding=0),
             nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1,
                       bias=False),
-            nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
             nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1,
                       bias=False),
-            nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
             nn.ConvTranspose2d(64, in_channels, kernel_size=4, stride=2, padding=1,
                       bias=False),
         )
-        self.output = nn.BatchNorm2d(in_channels)
+        self.output = nn.ReLU()
 
     def forward(self, x):
         x = self.encoder(x)
