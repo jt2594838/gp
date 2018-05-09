@@ -142,6 +142,7 @@ def validate(val_loader, model, criterion):
 
 
 def main():
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
     if not os.path.exists(args.train_dir):
         os.makedirs(args.train_dir)
 
@@ -160,8 +161,7 @@ def main():
 
     criterion = nn.MSELoss()
 
-    if args.usecuda:
-        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
+    if args.use_cuda:
         model = model.cuda()
         criterion = criterion.cuda()
 

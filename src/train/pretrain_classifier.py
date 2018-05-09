@@ -169,6 +169,7 @@ def accuracy(output, target, topk=(1,), confusion_matrix=None):
 
 
 def main():
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
     if not os.path.exists(args.train_dir):
         os.makedirs(args.train_dir)
     print("pretrained ?? {}", args.pretrained)
@@ -185,7 +186,6 @@ def main():
                                 momentum=args.momentum,
                                 weight_decay=args.weight_decay)
     if args.use_cuda:
-        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
         model = model.cuda()
         criterion = criterion.cuda()
 

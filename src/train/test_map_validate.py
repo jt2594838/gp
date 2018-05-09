@@ -134,6 +134,7 @@ def accuracy(output, target, topk=(1,)):
 
 
 def main():
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
     if not os.path.exists(args.val_dir):
         os.makedirs(args.val_dir)
 
@@ -146,7 +147,6 @@ def main():
     criterion = nn.CrossEntropyLoss()
 
     if args.use_cuda:
-        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
         model = model.cuda()
         criterion = criterion.cuda()
 

@@ -85,12 +85,12 @@ def generate(data_set, model, limit):
 
 
 def main():
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
     if not os.path.exists(args.data_dir):
         os.makedirs(args.data_dir)
 
     model = torch.load(args.model_path)
     if args.use_cuda:
-        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
         model = model.cuda()
     train_dataset = dataset_factory[args.dataset](args.data_dir, args.train)
 

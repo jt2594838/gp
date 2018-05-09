@@ -19,16 +19,8 @@ class ConvDeconv(nn.Module):
                       bias=False),
             nn.BatchNorm2d(256),
             nn.ReLU(inplace=True),
-            nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1,
-                      bias=False),
-            nn.BatchNorm2d(512),
-            nn.ReLU(inplace=True),
         )
         self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(512, 256, kernel_size=3, stride=1, padding=1,
-                      bias=False),
-            nn.BatchNorm2d(256),
-            nn.ReLU(inplace=True),
             nn.ConvTranspose2d(256, 128, kernel_size=3, stride=1, padding=1,
                       bias=False),
             nn.BatchNorm2d(128),
