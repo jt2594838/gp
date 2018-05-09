@@ -1,4 +1,7 @@
 import sys
+
+from nets.ConvDeconvV2 import ConvDeconvV2
+
 sys.path.append('.')
 sys.path.append('..')
 
@@ -71,7 +74,6 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # measure data loading time
         data_time.update(time.time() - end)
 
-        target = target.cuda(async=True)
         input_var = torch.autograd.Variable(input)
         target_var = torch.autograd.Variable(target)
         if args.use_cuda:
@@ -136,7 +138,7 @@ def validate(val_loader, model, criterion):
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(
                 i, len(val_loader), batch_time=batch_time, loss=losses))
 
-    print(' * Prec@1 {loss.val:.3f} Prec@5 {loss.avg:.3f}'
+    print(' * loss {loss.val:.3f} avg_loss {loss.avg:.3f}'
           .format(loss=losses))
 
     return losses.avg
@@ -151,6 +153,8 @@ def main():
         model = Deeplab(1, args.in_channels, args.pretrained)
     elif args.model == 'ConvDeconv':
         model = ConvDeconv(args.in_channels)
+    elif args.model == 'ConvDeconvV2':
+        model = ConvDeconvV2(args.in_channels)
     else:
         print('Illegal model name {0}'.format(args.model))
         exit(-1)
