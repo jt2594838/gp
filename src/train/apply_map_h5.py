@@ -10,6 +10,8 @@ from process.apply import apply_methods
 parser = argparse.ArgumentParser(description='Train a basic classifier')
 parser.add_argument('-apply_method_name', type=str, default='apply_loss4D')
 parser.add_argument('-print_freq', type=int, default=100)
+parser.add_argument('-map_path', type=str, default="")
+parser.add_argument('-output_path', type=str, default="")
 
 args = parser.parse_args()
 args.apply_method = apply_methods[args.apply_method_name]

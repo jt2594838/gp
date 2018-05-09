@@ -171,6 +171,7 @@ def accuracy(output, target, topk=(1,), confusion_matrix=None):
 def main():
     if not os.path.exists(args.train_dir):
         os.makedirs(args.train_dir)
+    print("pretrained ?? {}", args.pretrained)
 
     model = net_factory[args.model](args.classes, args.pretrained, args.in_channels, classify=True)
     train_dataset = dataset_factory[args.dataset](args.train_dir, True)

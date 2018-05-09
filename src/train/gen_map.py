@@ -7,7 +7,7 @@ import torch.nn as nn
 
 from dataset.factory import dataset_factory
 from process.apply import apply_methods
-from process.generate import gen_methods, processors
+from process.generate import gen_methods, processors, gen_on_set
 
 parser = argparse.ArgumentParser(description='Train a basic classifier')
 parser.add_argument('-batch_size', type=int, default=1)
@@ -22,7 +22,7 @@ parser.add_argument('-description', type=str, default='rect_quality')
 parser.add_argument('-apply_method', type=str, default='apply_loss4D')
 parser.add_argument('-size', type=int, default=8)
 parser.add_argument('-processor_name', type=str, default='zero')
-parser.add_argument('-gen_method_name', type=str, default='greed')
+parser.add_argument('-gen_method_name', type=str, default='rect_greed')
 parser.add_argument('-output_dir', type=str, default="/home/jt/codes/bs/gp/res_anzhen/train_map")
 parser.add_argument('-offset', type=int, default=0)
 parser.add_argument('-length', type=int, default=4300)
@@ -51,7 +51,7 @@ def main():
         model = model.cuda()
         criterion = criterion.cuda()
 
-    x, y, map = gen.gen_on_set(model, loader, args.size, criterion, args.window_processor, args.gen_method,
+    x, y, map = gen_on_set(model, loader, args.size, criterion, args.window_processor, args.gen_method,
                                args.offset, args.length, args.update_err, args.use_cuda)
 
     if not os.path.exists(args.output_dir):

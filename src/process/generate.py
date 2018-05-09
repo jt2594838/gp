@@ -181,7 +181,7 @@ def avg_processor(tensor):
 
 
 gen_methods = {
-    'greed': gen_sensitive_map_rect_greed,
+    'rect_greed': gen_sensitive_map_rect_greed,
     'super_pixel_zero': gen_map_superpixel_zero,
 }
 
