@@ -169,8 +169,7 @@ def main():
     optimizer = torch.optim.SGD(model.parameters(), args.lr,
                                 momentum=args.momentum,
                                 weight_decay=args.weight_decay)
-    # optimizer = torch.optim.Adam(model.parameters(), args.lr,
-    #                              weight_decay=args.weight_decay)
+    optimizer = torch.optim.Adam(model.parameters(), args.lr)
 
     for i in range(args.epoch):
         train(train_loader, model, criterion, optimizer, i)

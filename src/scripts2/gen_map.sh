@@ -1,21 +1,21 @@
 python_file='train/gen_map.py'
 batch_size=1
-train_dir="/home/jt/codes/bs/gp/data/anzhen/merged2"
-val_dir="/home/jt/codes/bs/gp/data/anzhen/merged2"
+train_dir="/home/jiangtian/code/gp/data/anzhen/merged2"
+val_dir="/home/jiangtian/code/gp/data/anzhen/merged2"
 dataset="anzhen"
 # pretrained="-pretrained 0"
-model_path="/home/jt/codes/bs/gp/res_anzhen/original_model/ResNet101_anzhen_3_200_98.35051569987819.pkl"
+model_path="/home/jiangtian/code/gp/res_anzhen/original_model/ResNet101_anzhen_3_200_98.35051569987819.pkl"
 model_name="ResNet"
 apply_method="apply_loss4D"
-size=6
+size=8
 processor_name="zero"
-gen_method_name="rect_greed"
+gen_method_name="super_pixel_zero"
 output_dir="/home/jiangtian/code/gp/res_anzhen/train_map"
 offset=0
 length=4370
 update_err="-update_err 1"
-gpu_no="0"
-description="zero_rect_greed_quantity"
+gpu_no="4"
+description="super_pixel_greed_quantity"
 
 python -u ${python_file} \
         -batch_size ${batch_size} \

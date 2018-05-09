@@ -12,7 +12,7 @@ train_dir="/home/jt/codes/bs/gp/res_anzhen/train_map/ResNet_anzhen_0_4300_zero_g
 val_dir="/home/jt/codes/bs/gp/res_anzhen/train_map/ResNet_anzhen_0_4300_zero_greed_rect_quantity.h5"
 description="zero_greed_rect_quantity"
 # preprocess="-preprocess 1"
-gpu_no="0"
+gpu_no="4"
 
 python -u ${python_file} \
         -batch_size ${batch_size} \

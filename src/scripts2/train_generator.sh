@@ -2,17 +2,16 @@ python_file='train/train_generator.py'
 batch_size=20
 epoch=50
 classes=3
-val_dir="/home/jt/codes/bs/gp/data/anzhen/merged2"
 dataset="anzhen"
 in_channels=1
 # pretrained="-pretrained 1"
 model="ConvDeconv"
-model_path="/home/jt/codes/bs/gp/res_anzhen/generator_model"
-train_dir="/home/jt/codes/bs/gp/res_anzhen/train_map/ResNet_anzhen_0_4300_zero_greed_rect_quantity.h5"
-val_dir="/home/jt/codes/bs/gp/res_anzhen/train_map/ResNet_anzhen_0_4300_zero_greed_rect_quantity.h5"
-description="zero_greed_rect_quantity"
-# preprocess="-preprocess 1"
-gpu_no="0"
+model_path="/home/jiangtian/code/gp/res_anzhen/generator_model"
+train_dir="/home/jiangtian/code/gp/res_anzhen/train_map/ResNet_anzhen_0_4370_zero_super_pixel_zero_super_pixel_greed_quantity.h5"
+val_dir="/home/jiangtian/code/gp/res_anzhen/train_map/ResNet_anzhen_0_4370_zero_super_pixel_zero_super_pixel_greed_quantity.h5"
+description="zero_super_pixel_quality"
+preprocess="-preprocess 1"
+gpu_no="4"
 
 python -u ${python_file} \
         -batch_size ${batch_size} \
