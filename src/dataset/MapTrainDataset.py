@@ -21,7 +21,7 @@ class MapTrainDataset(data.Dataset):
             self.target = np.array(y[int(0.9 * data_size):, :, :])
             self.data_size = self.data.shape[0]
         if preprocess:
-            self.target[self.target > 0.0] = 1.0
+            self.target[self.target > 0.5] = 1.0
 
     def __getitem__(self, index):
         return self.data[index, :, :, :], self.target[index, :, :]
