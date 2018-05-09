@@ -97,10 +97,10 @@ def gen_map_superpixel_zero(model, pic, label, size, criterion, window_processor
     width = pic.size()[3]
     map = torch.zeros((1, height, width))
     temp_tensor = torch.zeros(pic.size())
-    std_out = model(pic)
-    std_err = criterion(std_out, label)
     label = Variable(label, requires_grad=False)
     pic = Variable(pic, requires_grad=False)
+    std_out = model(pic)
+    std_err = criterion(std_out, label)
     if use_cuda:
         label = label.cuda()
         pic = pic.cuda()
