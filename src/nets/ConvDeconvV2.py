@@ -13,15 +13,16 @@ class ConvDeconvV2(nn.Module):
         self.encoder = Resnet.resnet50(pretrained=False, in_channels=in_channels)
         self.encoded_features = 1024
         self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(self.encoded_features, 128, kernel_size=3, stride=1, padding=1,
+            nn.Conv2d(self.encoded_features, 256, kernel_size=1, stride=1, padding=0),
+            nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1,
                       bias=False),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(128, 64, kernel_size=3, stride=1, padding=1,
+            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1,
                       bias=False),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(64, in_channels, kernel_size=3, stride=1, padding=1,
+            nn.ConvTranspose2d(64, in_channels, kernel_size=4, stride=2, padding=1,
                       bias=False),
         )
         self.output = nn.Sigmoid()
