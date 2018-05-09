@@ -144,17 +144,20 @@ def gen_on_set(model, dataset_loader, size, criterion, window_processor, gen_met
             one_map = one_map / max_ele
         # update new dataset
         if map is None:
-            map = one_map
+            map = torch.zeros((length, one_map.size(1), one_map.size(2))
+            map[i, :, :] = one_map[0, :, :]
         else:
-            map = torch.cat((map, one_map))
+            map[i, :, :] = one_map[0, :, :]
         if x is None:
-            x = input
+            x = torch.zeros((length, input.size(1), input.size(2), input.size(3))
+            x[i, :, :, :] = input[0, :, :, :]
         else:
-            x = torch.cat((x, input))
+            x[i, :, :, :] = input[0, :, :, :]
         if y is None:
-            y = target
+            y = torch.zeros((length, target.size(1)))
+            y[i, :] = target[0, :]
         else:
-            y = torch.cat((y, target))
+            y[i, :] = target[0, :]
         if (i + 1) % 10 == 0:
             print("%d maps generated" % (i+1))
 

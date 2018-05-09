@@ -1,3 +1,7 @@
+import sys
+sys.path.append('.')
+sys.path.append('..')
+
 import argparse
 import os
 
@@ -38,7 +42,10 @@ args.output_name = ("%s_%s_%d_%d_%s_%s_%s.h5" % (args.model_name, args.dataset, 
 
 
 def main():
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
+    print('loading model from {0}'.format(args.model_path))
     model = torch.load(args.model_path)
+    print('loading dataset from {0}'.format(args.train_dir))
     dataset = dataset_factory[args.dataset](args.train_dir, True)
     loader = torch.utils.data.DataLoader(
         dataset, batch_size=args.batch_size, shuffle=False,
@@ -47,7 +54,7 @@ def main():
     criterion = nn.CrossEntropyLoss()
 
     if args.use_cuda:
-        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
+        print('sending data to gpu {0}'.format(args.gpu_no))
         model = model.cuda()
         criterion = criterion.cuda()
 
