@@ -9,9 +9,9 @@ from nets import Resnet
 
 class ConvDeconvV2(nn.Module):
     def __init__(self, in_channels):
-        super(ConvDeconv, self).__init__()
+        super(ConvDeconvV2, self).__init__()
         self.encoder = Resnet.resnet50(pretrained=False, in_channels=in_channels)
-        self.encoded_features = 256
+        self.encoded_features = 1024
         self.decoder = nn.Sequential(
             nn.ConvTranspose2d(self.encoded_features, 128, kernel_size=3, stride=1, padding=1,
                       bias=False),

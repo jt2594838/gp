@@ -1,10 +1,9 @@
 import sys
 
-from nets.ConvDeconvV2 import ConvDeconvV2
-
 sys.path.append('.')
 sys.path.append('..')
 
+from nets.ConvDeconvV2 import ConvDeconvV2
 from nets.ConvDeconv import ConvDeconv
 from nets.deeplab import Deeplab
 from dataset.MapTrainDataset import MapTrainDataset
