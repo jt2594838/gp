@@ -122,7 +122,7 @@ def gen_map_superpixel_zero(model, pic, label, size, criterion, window_processor
             for j in range(height):
                 for k in range(width):
                     if superpixels[j][k] == i:
-                        map[0, j, k] = std_err - curr_err
+                        map[0, j, k] = std_err.data[0] - curr_err.data[0]
             pic.data[:] = temp_tensor[:]
             if update_err:
                 std_err.data[0] = curr_err.data[0]
