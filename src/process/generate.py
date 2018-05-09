@@ -154,10 +154,10 @@ def gen_on_set(model, dataset_loader, size, criterion, window_processor, gen_met
         else:
             x[i, :, :, :] = input[0, :, :, :]
         if y is None:
-            y = torch.zeros((length, target.size(1)))
-            y[i, :] = target[0, :]
+            y = torch.zeros((length, ))
+            y[i] = target[0]
         else:
-            y[i, :] = target[0, :]
+            y[i] = target[0]
         if (i + 1) % 10 == 0:
             print("%d maps generated" % (i+1))
 
