@@ -92,7 +92,7 @@ def gen_sensitive_map_rect_greed(model, pic, label, size, criterion, window_proc
 
 
 def gen_map_superpixel_zero(model, pic, label, size, criterion, window_processor, n_segments=100, update_err=False, use_cuda=True):
-    superpixels = slic(pic, n_segments=n_segments)
+    superpixels = slic(pic.squeeze(), n_segments=n_segments)
     height = pic.size()[2]
     width = pic.size()[3]
     map = torch.zeros((1, height, width))
@@ -123,9 +123,10 @@ def gen_map_superpixel_zero(model, pic, label, size, criterion, window_processor
                 for k in range(width):
                     if superpixels[j][k] == i:
                         map[0, j, k] = std_err - curr_err
-            pic[:] = temp_tensor[:]
+            pic.data[:] = temp_tensor[:]
             if update_err:
                 std_err.data[0] = curr_err.data[0]
+    return map
 
 
 def gen_on_set(model, dataset_loader, size, criterion, window_processor, gen_method, offset, length, update_err=False, use_cuda=True):
@@ -205,14 +206,14 @@ if __name__ == '__main__':
     a1 = 0.0    # average loss ratio after processing
     a2 = 0.0
     for t in range(times):
-        t1 = Variable(torch.rand((channel_num, 32, 32)))
-        label = Variable(torch.zeros(1)) + 0.5
+        t1 = torch.rand((1, channel_num, 224, 224))
+        label = torch.zeros(1) + 0.5
         model = dummy_model
         size = (6, 6)
         criterion = torch.nn.MSELoss()
-        std_out = model(t1)
-        std_err = criterion(std_out, label)
-        t2 = gen_sensitive_map_rect_greed(model, t1, label, size, criterion, all_one_processor)
+        std_out = model(Variable(t1))
+        std_err = criterion(std_out, Variable(label))
+        t2 = gen_map_superpixel_zero(model, t1, label, size, criterion, all_one_processor)
         if torch.max(t2) != 0:
             t2 = t2 / torch.max(t2)
         t3 = gen_sensitive_map_rect_greed(model, t1, label, size, criterion, all_zero_processor)
