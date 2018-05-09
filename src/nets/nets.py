@@ -1,4 +1,7 @@
-import Resnet, VGG
+import sys
+sys.path.append('..')
+
+from nets import Resnet, VGG
 import torch.nn as nn
 
 
