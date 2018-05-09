@@ -108,7 +108,7 @@ def gen_map_superpixel_zero(model, pic, label, size, criterion, window_processor
         label = label.cuda()
         pic = pic.cuda()
     for i in range(n_segments):
-        temp_tensor[:] = pic[:]
+        temp_tensor[:] = pic.data[:]
         for j in range(height):
             for k in range(width):
                 if superpixels[j][k] == i:
