@@ -23,7 +23,7 @@ class ConvDeconvV2(nn.Module):
             nn.ConvTranspose2d(64, in_channels, kernel_size=4, stride=2, padding=1,
                       bias=False),
         )
-        self.output = nn.ReLU()
+        self.output = nn.BatchNorm2d(in_channels)
 
     def forward(self, x):
         x = self.encoder(x)
