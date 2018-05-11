@@ -93,7 +93,8 @@ def gen_sensitive_map_rect_greed(model, pic, label, size, criterion, window_proc
 
 
 def gen_map_superpixel_zero(model, pic, label, size, criterion, window_processor, update_err=False, use_cuda=True):
-    superpixels = slic(pic.squeeze(), n_segments=size, compactness=10)
+    n_segments = size[0]
+    superpixels = slic(pic.squeeze(), n_segments=n_segments, compactness=10)
     height = pic.size()[2]
     width = pic.size()[3]
     map = torch.zeros((1, height, width))
@@ -108,7 +109,7 @@ def gen_map_superpixel_zero(model, pic, label, size, criterion, window_processor
     if use_cuda:
         label = label.cuda()
         pic = pic.cuda()
-    for i in range(size):
+    for i in range(n_segments):
         temp_tensor[:] = pic.data[:]
         for j in range(height):
             for k in range(width):
