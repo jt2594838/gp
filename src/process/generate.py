@@ -3,6 +3,7 @@ import time
 import torch
 from torch.autograd import Variable
 from skimage.segmentation import slic
+from skimage.util import img_as_float
 
 channel_num = 1
 
@@ -91,8 +92,8 @@ def gen_sensitive_map_rect_greed(model, pic, label, size, criterion, window_proc
     return map
 
 
-def gen_map_superpixel_zero(model, pic, label, size, criterion, window_processor, n_segments=100, update_err=False, use_cuda=True):
-    superpixels = slic(pic.squeeze(), n_segments=n_segments)
+def gen_map_superpixel_zero(model, pic, label, size, criterion, window_processor, update_err=False, use_cuda=True, n_segments=100):
+    superpixels = slic(pic.squeeze(), n_segments=n_segments, compactness=10)
     height = pic.size()[2]
     width = pic.size()[3]
     map = torch.zeros((1, height, width))
@@ -199,11 +200,11 @@ processors = {
 }
 
 
-if __name__ == '__main__':
+def test():
     times = 1000
-    w1 = 0      # succeeded times of lowering the loss
+    w1 = 0  # succeeded times of lowering the loss
     w2 = 0
-    a1 = 0.0    # average loss ratio after processing
+    a1 = 0.0  # average loss ratio after processing
     a2 = 0.0
     for t in range(times):
         t1 = torch.rand((1, channel_num, 224, 224))
@@ -247,3 +248,18 @@ if __name__ == '__main__':
             w2 += 1
         a2 += t_loss_error.data[0] / std_err.data[0]
     print(w1, w2, a1 / times, a2 / times)
+
+
+def test_slic():
+    import h5py as h5
+    file = h5.File('/home/jt/codes/bs/gp/data/anzhen/merged2')
+    pics = file['x'][:]
+    pic = pics[0, :, :]
+    segments = slic(pic, n_segments=200)
+    segments2 = slic(torch.from_numpy(pic), n_segments=200)
+    print(segments)
+    print(segments2)
+
+
+if __name__ == '__main__':
+    test_slic()
