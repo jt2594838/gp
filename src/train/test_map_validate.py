@@ -20,19 +20,19 @@ parser.add_argument('-workers', type=int, default=1)
 parser.add_argument('-print_freq', type=int, default=1)
 parser.add_argument('-classes', type=int, default=3)
 parser.add_argument('-map_dir', type=str,
-                    default="/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_unpreprocessed_0.09455910949409008_VGG16_0.9_79.11_98.59_validate.h5")
-parser.add_argument('-val_dir', type=str, default="./data/val_data/")
+                    default="/home/jt/codes/bs/gp/res/maps/Deeplab_CIFAR_10_unpreprocessed_VGG16_validate.h5")
+parser.add_argument('-val_dir', type=str, default="/home/jt/codes/bs/gp/data/val_data")
 parser.add_argument('-dataset', type=str, default='CIFAR_10')
 parser.add_argument('-pretrained', type=bool, default=False)
 parser.add_argument('-model', type=str, default='ResNet101')
 parser.add_argument('-model_path', type=str,
-                    default='/home/jt/codes/bs/nb/src/train/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl')
+                    default='/home/jt/codes/bs/gp/res/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl')
 parser.add_argument('-use_cuda', type=bool, default=True)
 parser.add_argument('-gpu_no', type=str, default='0')
 parser.add_argument('-description', type=str, default='unpreprocessed_ResNet')
-parser.add_argument('-threshold', type=float, default=0.9)
+parser.add_argument('-threshold', type=list, default=(0.9, 1.0))
 parser.add_argument('-apply_method', type=str, default='apply_loss4D')
-parser.add_argument('-output', type=str, default="./")
+parser.add_argument('-output', type=str, default="./output")
 
 args = parser.parse_args()
 args.apply_method = apply_methods[args.apply_method]
@@ -57,7 +57,7 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-def validate(val_loader, model, criterion, map_dataset=None, apply_method=None):
+def validate(val_loader, model, criterion, map_dataset=None, apply_method=None, threshold=1.0):
     batch_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
@@ -74,7 +74,6 @@ def validate(val_loader, model, criterion, map_dataset=None, apply_method=None):
             for j in range(maps.size(0)):
                 maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
                             torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
-            threshold = args.threshold
             maps[maps > threshold] = 1
             maps[maps <= threshold] = 0
             input = apply_method(input, maps)
@@ -91,7 +90,7 @@ def validate(val_loader, model, criterion, map_dataset=None, apply_method=None):
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
-        prec1 = accuracy(output.data, target, topk=(1))
+        prec1, = accuracy(output.data, target, topk=(1,))
         losses.update(loss.data[0], input.size(0))
         top1.update(prec1[0], input.size(0))
         # top5.update(prec5[0], input.size(0))
@@ -106,10 +105,10 @@ def validate(val_loader, model, criterion, map_dataset=None, apply_method=None):
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
                   'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'.format(
                 i, len(val_loader), batch_time=batch_time, loss=losses,
-                top1=top1))
+                top1=top1,))
 
     print(' * Prec@1 {top1.avg:.3f}'
-          .format(top1=top1))
+          .format(top1=top1,))
 
     return top1.avg
 
@@ -130,7 +129,7 @@ def accuracy(output, target, topk=(1,)):
     return res
 
 
-def main():
+def main(threshold):
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
     if not os.path.exists(args.val_dir):
         os.makedirs(args.val_dir)
@@ -151,12 +150,13 @@ def main():
 
     # p1, p5 = validate(val_loader, model, criterion)
     # print('Validate result without map: top1 {0}, top5 {1}, all {2}'.format(p1, p5, all))
-    p1 = validate(val_loader, model, criterion, map_dataset, args.apply_method)
+    p1 = validate(val_loader, model, criterion, map_dataset, args.apply_method, threshold)
     print('Validate result with map: top1 {0}'.format(p1))
-    file = open(args.output, 'xa')
-    file.write('map {0} \t threshold {1} \t precision {2} \n'.format(args.map_dir, args.threshold, p1))
+    file = open(args.output, 'a')
+    file.write('map {0} \t threshold {1} \t precision {2} \n'.format(args.map_dir, threshold, p1))
     file.close()
 
 
 if __name__ == '__main__':
-    main()
+    for threshold in args.threshold:
+        main(float(threshold))
