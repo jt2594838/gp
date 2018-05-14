@@ -7,12 +7,12 @@ in_channels=1
 # pretrained="-pretrained 1"
 model="ConvDeconvV2"
 model_path="/home/jiangtian/code/gp/res_anzhen/generator_model"
-train_dir="/home/jiangtian/code/gp/res_anzhen/train_map/ResNet_anzhen_0_4370_zero_super_pixel_zero_super_pixel_greed_quantity.h5"
-val_dir="/home/jiangtian/code/gp/res_anzhen/train_map/ResNet_anzhen_0_4370_zero_super_pixel_zero_super_pixel_greed_quantity.h5"
-description="zero_super_pixel_quality"
+train_dir="/home/jiangtian/code/gp/res_anzhen/train_map/ResNet_anzhen_0_4370_zero_super_pixel_zero_super_pixel_greed_quantity_seg200.h5"
+val_dir="/home/jiangtian/code/gp/res_anzhen/train_map/ResNet_anzhen_0_4370_zero_super_pixel_zero_super_pixel_greed_quantity_seg200.h5"
+description="zero_super_pixel_quantity_200"
 # preprocess="-preprocess 1"
-gpu_no="1"
-learn_rate=0.001
+gpu_no="2"
+learn_rate=0.005
 
 python -u ${python_file} \
         -batch_size ${batch_size} \

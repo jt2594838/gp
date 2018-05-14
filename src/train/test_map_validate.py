@@ -30,7 +30,7 @@ parser.add_argument('-model_path', type=str,
 parser.add_argument('-use_cuda', type=bool, default=True)
 parser.add_argument('-gpu_no', type=str, default='0')
 parser.add_argument('-description', type=str, default='unpreprocessed_ResNet')
-parser.add_argument('-threshold', type=list, default=(0.9, 1.0))
+parser.add_argument('-threshold', type=str, default="0.9, 1.0")
 parser.add_argument('-apply_method', type=str, default='apply_loss4D')
 parser.add_argument('-output', type=str, default="./output")
 
@@ -158,5 +158,6 @@ def main(threshold):
 
 
 if __name__ == '__main__':
+    args.threshold = args.threshold.split(',')
     for threshold in args.threshold:
         main(float(threshold))

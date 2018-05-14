@@ -2,32 +2,27 @@ python_file='train/test_map_validate.py'
 batch_size=50
 epoch=50
 classes=3
-val_dir="/home/jt/codes/bs/gp/data/anzhen/merged2"
+val_dir="/home/jiangtian/code/gp/data/anzhen/merged2"
 dataset="anzhen"
-in_channels=1
 # pretrained="-pretrained 1"
 model="ResNet101"
-model_path="/home/jt/codes/bs/nb/src/train/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl"
-map_dir="/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_unpreprocessed_0.09455910949409008_VGG16_0.9_79.11_98.59_validate.h5"
-val_dir="./data/val_data/"
-description="l5000"
+model_path="/home/jiangtian/code/gp/res_anzhen/original_model/ResNet101_anzhen_3_200_98.35051569987819.pkl"
+map_dir="/home/jiangtian/code/gp/res_anzhen/val_map/ConvDeconvV2_anzhen_zero_rect_greed_quality_train_l4370.h5"
 # preprocess="-preprocess 1"
-threshold=0.9
+threshold="0.5,0.6,0.7,0.8,0.9,0.95,0.99,1.0"
 apply_method="apply_loss4D"
-gpu_no="0"
+gpu_no="5"
+output="/home/jiangtian/code/gp/res_anzhen/val_rst/ConvDeconv_zero_rect_quality.rst"
 
 python -u ${python_file} \
         -batch_size ${batch_size} \
-        -epoch ${epoch}  \
         -classes ${classes}  \
         -dataset ${dataset} \
-        -in_channels ${in_channels} \
         ${pretrained} \
         -model ${model} \
         -model_path ${model_path} \
         -map_dir ${map_dir} \
         -val_dir ${val_dir} \
-        -description ${description} \
         ${preprocess}   \
         -threshold ${threshold} \
         -apply_method ${apply_method} \
