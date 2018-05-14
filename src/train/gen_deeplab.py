@@ -13,7 +13,7 @@ from dataset.factory import dataset_factory
 
 
 parser = argparse.ArgumentParser(description='Train a basic classifier')
-parser.add_argument('-preint_freq', type=int, default=100)
+parser.add_argument('-print_freq', type=int, default=100)
 parser.add_argument('-classes', type=int, default=1)
 parser.add_argument('-data_dir', type=str, default="./data/train_data/")
 parser.add_argument('-dataset', type=str, default='CIFAR_10')
