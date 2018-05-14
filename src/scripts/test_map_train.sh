@@ -15,6 +15,7 @@ description="l5000"
 threshold=0.9
 apply_method="apply_loss4D"
 gpu_no="0"
+output="./"
 
 python -u ${python_file} \
         -batch_size ${batch_size} \

@@ -38,6 +38,7 @@ parser.add_argument('-description', type=str, default='l5000')
 parser.add_argument('-preprocess', type=bool, default=False)
 parser.add_argument('-threshold', type=float, default=0.9)
 parser.add_argument('-apply_method', type=str, default='apply_loss4D')
+parser.add_argument('-output', type=str, default="./")
 
 args = parser.parse_args()
 args.apply_method = apply_methods[args.apply_method]
@@ -118,7 +119,7 @@ def validate(val_loader, model, criterion, map_dataset=None, apply_method=None):
     batch_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
-    top5 = AverageMeter()
+    # top5 = AverageMeter()
     batch_size = val_loader.batch_size
 
     # switch to evaluate mode
@@ -147,10 +148,10 @@ def validate(val_loader, model, criterion, map_dataset=None, apply_method=None):
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
-        prec1, prec5 = accuracy(output.data, target, topk=(1, 5))
+        prec1, prec5 = accuracy(output.data, target, topk=(1))
         losses.update(loss.data[0], input.size(0))
         top1.update(prec1[0], input.size(0))
-        top5.update(prec5[0], input.size(0))
+        # top5.update(prec5[0], input.size(0))
 
         # measure elapsed time
         batch_time.update(time.time() - end)
@@ -160,15 +161,14 @@ def validate(val_loader, model, criterion, map_dataset=None, apply_method=None):
             print('Test: [{0}/{1}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                  'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'
-                  'Prec@5 {top5.val:.3f} ({top5.avg:.3f})\t'.format(
+                  'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'.format(
                 i, len(val_loader), batch_time=batch_time, loss=losses,
-                top1=top1, top5=top5))
+                top1=top1))
 
-    print(' * Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f}'
-          .format(top1=top1, top5=top5,))
+    print(' * Prec@1 {top1.avg:.3f}'
+          .format(top1=top1,))
 
-    return top1.avg, top5.avg
+    return top1.avg
 
 
 def accuracy(output, target, topk=(1,)):
@@ -217,14 +217,18 @@ def main():
         val_dataset, batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=False)
 
-    p1, p5 = validate(val_loader, model, criterion, val_map_dataset, args.apply_method)
+    p1 = validate(val_loader, model, criterion, val_map_dataset, args.apply_method)
 
-    filename = '{0}_{1}_{2}_{3}_{4}_{5}_{6}_map.pkl'.format(args.model, args.dataset, str(args.classes), str(args.epoch),
-                                                    str(p1), str(p5), args.description)
+    filename = '{0}_{1}_{2}_{3}_{4}_{6}_map.pkl'.format(args.model, args.dataset, str(args.classes), str(args.epoch),
+                                                    str(p1), args.description)
     path = os.path.join(args.model_path, filename)
     if not os.path.exists(args.model_path):
         os.makedirs(args.model_path)
     torch.save(model, path)
+
+    file = open(args.output, 'xa')
+    file.write('map {0} \t threshold {1} \t precision {2} \n'.format(args.map_dir, args.threshold, p1))
+    file.close()
 
 
 if __name__ == '__main__':

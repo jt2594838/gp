@@ -81,6 +81,7 @@ def generate(data_set, model, limit):
         if i + 1 >= limit:
             break
 
+    print("Map generation with NN is done")
     return map
 
 

@@ -29,4 +29,5 @@ python -u ${python_file} \
         -val_dir ${val_dir} \
         -description ${description} \
         ${preprocess}   \
-        -gpu_no ${gpu_no}
+        -gpu_no ${gpu_no} \
+        -output ${output}
