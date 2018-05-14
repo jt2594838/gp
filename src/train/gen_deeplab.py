@@ -108,6 +108,7 @@ def main():
 
 
 if __name__ == '__main__':
+    print('In {} mode'.format(args.train))
     main()
 
 

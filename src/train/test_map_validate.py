@@ -33,6 +33,7 @@ parser.add_argument('-description', type=str, default='unpreprocessed_ResNet')
 parser.add_argument('-threshold', type=str, default="0.9, 1.0")
 parser.add_argument('-apply_method', type=str, default='apply_loss4D')
 parser.add_argument('-output', type=str, default="./output")
+parser.add_argument('-repeat', type=int, default=10)
 
 args = parser.parse_args()
 args.apply_method = apply_methods[args.apply_method]
@@ -160,4 +161,5 @@ def main(threshold):
 if __name__ == '__main__':
     args.threshold = args.threshold.split(',')
     for threshold in args.threshold:
-        main(float(threshold))
+        for i in range(args.repeat):
+            main(float(threshold))

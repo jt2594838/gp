@@ -13,6 +13,7 @@ threshold=0.9,1.0
 apply_method="apply_loss4D"
 gpu_no="0"
 output="./output"
+repeat=10
 
 python -u ${python_file} \
         -batch_size ${batch_size} \
@@ -28,4 +29,5 @@ python -u ${python_file} \
         -threshold ${threshold} \
         -apply_method ${apply_method} \
         -gpu_no ${gpu_no}  \
-        -output ${output}
+        -output ${output}   \
+        -repeat ${repeat}
