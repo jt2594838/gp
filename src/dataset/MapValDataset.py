@@ -9,7 +9,7 @@ class MapValDataset(data.Dataset):
         self.root = os.path.expanduser(root)
         file = h5.File(root)
         self.x = torch.from_numpy(file['x'][:])
-        self.y = torch.from_numpy(file['y'][:])
+        self.y = torch.from_numpy(file['y'][:]).long()
         self.map = torch.from_numpy(file['map'][:])
         self.data_size = self.x.size(0)
         file.close()

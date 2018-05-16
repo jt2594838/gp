@@ -59,6 +59,7 @@ def generate(data_set, model, limit):
     map = None
     x = None
     y = None
+    limit = limit if limit < len(data_set) else len(data_set)
     for i, (input, target) in enumerate(data_set):
         if input.dim() < 3:
             input = input.unsqueeze(0)
