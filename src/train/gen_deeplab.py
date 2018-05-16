@@ -15,10 +15,10 @@ from dataset.factory import dataset_factory
 parser = argparse.ArgumentParser(description='Train a basic classifier')
 parser.add_argument('-print_freq', type=int, default=100)
 parser.add_argument('-classes', type=int, default=1)
-parser.add_argument('-data_dir', type=str, default="./data/train_data/")
+parser.add_argument('-data_dir', type=str, default="/home/jt/codes/bs/gp/data/val_data")
 parser.add_argument('-dataset', type=str, default='CIFAR_10')
 parser.add_argument('-model', type=str, default='DeeplabS')
-parser.add_argument('-model_path', type=str, default='/home/jt/codes/bs/nb/src/train/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl')
+parser.add_argument('-model_path', type=str, default='/home/jt/codes/bs/gp/res/models/deeplabS2048_CIFAR_5000_zero_1_10_0.09455910949409008_unpreprocessed_VGG16.pkl')
 parser.add_argument('-map_path', type=str, default='/home/jt/codes/bs/nb/src/train/maps')
 parser.add_argument('-train', type=bool, default=False)
 parser.add_argument('-limit', type=int, default=50000)
@@ -60,8 +60,8 @@ def generate(data_set, model, limit):
     x = None
     y = None
     for i, (input, target) in enumerate(data_set):
-        if len(input.size()) < 4:
-            input = input.unsqueeze(1)
+        if input.dim() < 3:
+            input = input.unsqueeze(0)
         input_var = torch.autograd.Variable(input, volatile=True).unsqueeze(0)
         if args.use_cuda:
             input_var = input_var.cuda()
