@@ -10,7 +10,6 @@ import time
 import torch
 import torch.nn as nn
 
-from dataset.factory import dataset_factory
 from process.apply import apply_methods
 from dataset.MapValDataset import MapValDataset
 
@@ -58,26 +57,23 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-def validate(val_loader, model, criterion, map_dataset=None, apply_method=None, threshold=1.0):
+def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
     batch_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
     # top5 = AverageMeter()
-    batch_size = val_loader.batch_size
 
     # switch to evaluate mode
     model.eval()
 
     end = time.time()
-    for i, (input, target) in enumerate(val_loader):
-        if map_dataset is not None:
-            maps = map_dataset[i * batch_size: i * batch_size + input.size(0)]
-            for j in range(maps.size(0)):
-                maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
-                            torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
-            maps[maps > threshold] = 1
-            maps[maps <= threshold] = 0
-            input = apply_method(input, maps)
+    for i, (input, target, maps) in enumerate(val_loader):
+        for j in range(maps.size(0)):
+            maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
+                        torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
+        maps[maps > threshold] = 1
+        maps[maps <= threshold] = 0
+        input = apply_method(input, maps)
 
         target = target.cuda(async=True)
         input_var = torch.autograd.Variable(input, volatile=True)
@@ -136,11 +132,6 @@ def main(threshold):
         os.makedirs(args.val_dir)
 
     model = torch.load(args.model_path)
-    val_dataset = dataset_factory[args.dataset](args.val_dir, False)
-    val_loader = torch.utils.data.DataLoader(
-        val_dataset, batch_size=args.batch_size, shuffle=False,
-        num_workers=args.workers, pin_memory=False)
-
     criterion = nn.CrossEntropyLoss()
 
     if args.use_cuda:
@@ -148,10 +139,13 @@ def main(threshold):
         criterion = criterion.cuda()
 
     map_dataset = MapValDataset(args.map_dir)
+    val_loader = torch.utils.data.DataLoader(
+        map_dataset, batch_size=args.batch_size, shuffle=False,
+        num_workers=args.workers, pin_memory=False)
 
     # p1, p5 = validate(val_loader, model, criterion)
     # print('Validate result without map: top1 {0}, top5 {1}, all {2}'.format(p1, p5, all))
-    p1 = validate(val_loader, model, criterion, map_dataset, args.apply_method, threshold)
+    p1 = validate(val_loader, model, criterion, args.apply_method, threshold)
     print('Validate result with map: top1 {0}'.format(p1))
     file = open(args.output, 'a')
     file.write('map {0} \t threshold {1} \t precision {2} \n'.format(args.map_dir, threshold, p1))

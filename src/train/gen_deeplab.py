@@ -57,6 +57,8 @@ def generate(data_set, model, limit):
 
     end = time.time()
     map = None
+    x = None
+    y = None
     for i, (input, target) in enumerate(data_set):
         input_var = torch.autograd.Variable(input, volatile=True).unsqueeze(0)
         if args.use_cuda:
@@ -68,7 +70,11 @@ def generate(data_set, model, limit):
         # record inputs and outputs
         if map is None:
             map = torch.zeros((len(data_set), output.size(2), output.size(3)))
+            x = torch.zeros(len(data_set), input.size(1), input.size(2), input.size(3))
+            y = torch.zeros(len(data_set))
         map[i, :, :] = output.data[0, 0, :, :]
+        x[i, :, :, :] = input[0, :, :, :]
+        y[i] = target
 
         # measure elapsed time
         batch_time.update(time.time() - end)
@@ -82,7 +88,7 @@ def generate(data_set, model, limit):
             break
 
     print("Map generation with NN is done")
-    return map
+    return map, x, y
 
 
 def main():
@@ -95,7 +101,7 @@ def main():
         model = model.cuda()
     train_dataset = dataset_factory[args.dataset](args.data_dir, args.train)
 
-    map = generate(train_dataset, model, args.limit)
+    map, x, y = generate(train_dataset, model, args.limit)
 
     filename = '{0}_{1}_{2}.h5'.format(args.model, args.dataset, args.description)
     path = os.path.join(args.map_path, filename)
@@ -104,6 +110,8 @@ def main():
 
     file = h5.File(path)
     file.create_dataset('map', data=map)
+    file.create_dataset('x', data=x)
+    file.create_dataset('y', data=y)
     file.close()
 
 
