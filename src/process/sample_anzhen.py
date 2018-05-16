@@ -17,8 +17,8 @@ def main():
     choices = np.random.choice(data_size, int(args.sample_rate * data_size), replace=False)
 
     choices.sort()
-    x = input['x'][list(choices)].float()
-    y = input['y'][list(choices)].long()
+    x = input['x'][list(choices)]
+    y = input['y'][list(choices)]
 
     output = h5.File(args.output)
     output.create_dataset('x', data=x)
