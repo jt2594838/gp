@@ -72,10 +72,10 @@ def generate(data_set, model, limit):
         # record inputs and outputs
         if map is None:
             map = torch.zeros((len(data_set), output.size(2), output.size(3)))
-            x = torch.zeros(len(data_set), input.size(1), input.size(2), input.size(3))
+            x = torch.zeros(len(data_set), input.size(0), input.size(1), input.size(2))
             y = torch.zeros(len(data_set))
         map[i, :, :] = output.data[0, 0, :, :]
-        x[i, :, :, :] = input[0, :, :, :]
+        x[i, :, :, :] = input[:, :, :]
         y[i] = target
 
         # measure elapsed time
