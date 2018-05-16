@@ -102,7 +102,7 @@ def main():
     model = torch.load(args.model_path)
     if args.use_cuda:
         model = model.cuda()
-    train_dataset = dataset_factory[args.dataset](args.data_dir, args.train)
+    train_dataset = dataset_factory[args.dataset](args.data_dir, True, sample_rate=1.0)
 
     map, x, y = generate(train_dataset, model, args.limit)
 
