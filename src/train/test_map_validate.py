@@ -146,14 +146,25 @@ def main(threshold):
     # p1, p5 = validate(val_loader, model, criterion)
     # print('Validate result without map: top1 {0}, top5 {1}, all {2}'.format(p1, p5, all))
     p1 = validate(val_loader, model, criterion, args.apply_method, threshold)
-    print('Validate result with map: top1 {0}'.format(p1))
+    print('Validate result with map: top1 {0}, threshold {1}'.format(p1, threshold))
     file = open(args.output, 'a')
     file.write('map {0} \t threshold {1} \t precision {2} \n'.format(args.map_dir, threshold, p1))
     file.close()
 
+    return p1
+
 
 if __name__ == '__main__':
     args.threshold = args.threshold.split(',')
+    summary = []
     for threshold in args.threshold:
+        sum = 0.0
         for i in range(args.repeat):
-            main(float(threshold))
+            sum += main(float(threshold))
+        sum /= args.repeat
+        summary.append(sum)
+
+    file = open(args.output, 'a')
+    for i in range(len(args.threshold)):
+        file.write('threshold {}, avg {} \n'.format(args.threshold[i], summary[i]))
+    file.close()
