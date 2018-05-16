@@ -60,6 +60,8 @@ def generate(data_set, model, limit):
     x = None
     y = None
     for i, (input, target) in enumerate(data_set):
+        if len(input.size()) < 4:
+            input = input.unsqueeze(1)
         input_var = torch.autograd.Variable(input, volatile=True).unsqueeze(0)
         if args.use_cuda:
             input_var = input_var.cuda()
