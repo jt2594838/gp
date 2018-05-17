@@ -20,7 +20,6 @@ parser.add_argument('-print_freq', type=int, default=1)
 parser.add_argument('-classes', type=int, default=3)
 parser.add_argument('-map_dir', type=str,
                     default="/home/jt/codes/bs/gp/res/maps/Deeplab_CIFAR_10_unpreprocessed_VGG16_validate.h5")
-parser.add_argument('-val_dir', type=str, default="/home/jt/codes/bs/gp/data/val_data")
 parser.add_argument('-dataset', type=str, default='CIFAR_10')
 parser.add_argument('-pretrained', type=bool, default=False)
 parser.add_argument('-model', type=str, default='ResNet101')
@@ -128,8 +127,6 @@ def accuracy(output, target, topk=(1,)):
 
 def main(threshold):
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
-    if not os.path.exists(args.val_dir):
-        os.makedirs(args.val_dir)
 
     model = torch.load(args.model_path)
     criterion = nn.CrossEntropyLoss()
