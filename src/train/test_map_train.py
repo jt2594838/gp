@@ -189,7 +189,7 @@ def main():
         os.makedirs(args.train_dir)
 
     model = nets.net_factory[args.model](args.classes)
-    train_dataset = H5Dataset(args.train_dir)
+    train_dataset = H5Dataset(args.train_dir, use_transform=False)
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=False)

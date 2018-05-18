@@ -7,7 +7,8 @@ import numpy as np
 
 
 class H5Dataset(data.Dataset):
-    def __init__(self, root, train=True, sample_rate=0.9):
+    def __init__(self, root, train=True, sample_rate=0.9, use_transform=True):
+        self.use_transform = use_transform
         self.root = os.path.expanduser(root)
         file = h5.File(root)
         data_size = file['x'].shape[0]
@@ -31,7 +32,9 @@ class H5Dataset(data.Dataset):
 
     def __getitem__(self, index):
         data = self.data[index, :, :]
-        return self.transform(data), self.label[index, 0]
+        if self.use_transform:
+            data = self.transform(data)
+        return data, self.label[index, 0]
 
     def __len__(self):
         return self.data_size
