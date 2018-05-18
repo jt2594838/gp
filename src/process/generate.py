@@ -131,6 +131,45 @@ def gen_map_superpixel_zero(model, pic, label, size, criterion, window_processor
     return map
 
 
+def gen_map_superpixel_one(model, pic, label, size, criterion, window_processor, update_err=False, use_cuda=True):
+    n_segments = size[0]
+    superpixels = slic(pic.squeeze(), n_segments=n_segments, compactness=10)
+    height = pic.size()[2]
+    width = pic.size()[3]
+    map = torch.zeros((1, height, width))
+    temp_tensor = torch.zeros(pic.size())
+    label = Variable(label, requires_grad=False)
+    pic = Variable(pic, requires_grad=False)
+    if use_cuda:
+        label = label.cuda()
+        pic = pic.cuda()
+    std_out = model(pic)
+    std_err = criterion(std_out, label)
+    if use_cuda:
+        label = label.cuda()
+        pic = pic.cuda()
+    for i in range(n_segments):
+        temp_tensor[:] = pic.data[:]
+        for j in range(height):
+            for k in range(width):
+                if superpixels[j][k] == i:
+                    temp_tensor[0, :, j, k] = 1
+        temp_var = Variable(temp_tensor, requires_grad=False)
+        if use_cuda:
+            temp_var = temp_var.cuda()
+        curr_out = model(temp_var)
+        curr_err = criterion(curr_out, label)
+        if curr_err.data[0] < std_err.data[0]:
+            for j in range(height):
+                for k in range(width):
+                    if superpixels[j][k] == i:
+                        map[0, j, k] = std_err.data[0] - curr_err.data[0]
+            pic.data[:] = temp_tensor[:]
+            if update_err:
+                std_err.data[0] = curr_err.data[0]
+    return map
+
+
 def gen_on_set(model, dataset_loader, size, criterion, window_processor, gen_method, offset, length, update_err=False, use_cuda=True):
     print('Map generation on dataset begins..., dataset size %d, offset %d, length %d' %
           (len(dataset_loader), offset, length))
@@ -192,6 +231,7 @@ def avg_processor(tensor):
 gen_methods = {
     'rect_greed': gen_sensitive_map_rect_greed,
     'super_pixel_zero': gen_map_superpixel_zero,
+    'super_pixel_one': gen_map_superpixel_one,
 }
 
 processors = {
