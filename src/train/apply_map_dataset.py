@@ -35,7 +35,7 @@ def apply(dataset, map, method):
             y = np.zeros((len(dataset), 1))
         applied[i, :, :, :] = method(input, torch.from_numpy(map[i, :, :]).unsqueeze(0))
         y[i, :] = target
-        if (i + 1) % args.print_frequency == 0:
+        if (i + 1) % args.print_freq == 0:
             print('{0}/{1} applied'.format(i + 1, args.limit))
         if i + 1 >= args.limit:
             break
