@@ -33,7 +33,7 @@ def apply(dataset, map, method):
         if applied is None:
             applied = np.zeros((args.limit, input.shape[0], input.shape[1], input.shape[2]))
             y = np.zeros((len(dataset), 1))
-        applied[i, :, :, :] = method(input, torch.from_numpy(map[i, :, :]))
+        applied[i, :, :, :] = method(input, torch.from_numpy(map[i, :, :].unsqueeze(0)))
         y[i, :] = target
         if (i + 1) % args.print_frequency == 0:
             print('{0}/{1} applied'.format(i + 1, args.limit))
