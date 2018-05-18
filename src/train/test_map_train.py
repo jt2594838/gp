@@ -87,7 +87,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
         loss = criterion(output, target_var.squeeze())
 
         # measure accuracy and record loss
-        prec1 = accuracy(output.data, target, topk=(1,))
+        prec1 = accuracy(output.data, target_var.data, topk=(1,))
         losses.update(loss.data[0], input.size(0))
         top1.update(prec1[0], input.size(0))
 
