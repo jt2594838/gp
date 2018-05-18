@@ -17,7 +17,9 @@ class H5Dataset(data.Dataset):
         else:
             choices = np.random.choice(data_size, int((1 - sample_rate) * data_size), replace=False)
         choices.sort()
-        self.data = torch.from_numpy(file['x'][list(choices)]).float().unsqueeze(1)
+        self.data = torch.from_numpy(file['x'][list(choices)]).float()
+        if self.data.dim() < 4:
+            self.data = self.data.unsqueeze(1)
         self.label = torch.from_numpy(file['y'][list(choices)]).long()
         self.data_size = len(choices)
 
