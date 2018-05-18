@@ -115,30 +115,27 @@ def train(train_loader, model, criterion, optimizer, epoch):
                 data_time=data_time, loss=losses, top1=top1, top5=top5))
 
 
-def validate(val_loader, model, criterion, map_dataset=None, apply_method=None):
+def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
     batch_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
     # top5 = AverageMeter()
-    batch_size = val_loader.batch_size
 
     # switch to evaluate mode
     model.eval()
 
     end = time.time()
-    for i, (input, target) in enumerate(val_loader):
-        if map_dataset is not None:
-            maps = map_dataset[i * batch_size: i * batch_size + input.size(0)]
-            for j in range(maps.size(0)):
-                maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
-            threshold = args.threshold
-            maps[maps > threshold] = 1
-            maps[maps <= threshold] = 0
-            input = apply_method(input, maps)
+    for i, (input, target, maps) in enumerate(val_loader):
+        for j in range(maps.size(0)):
+            maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
+                        torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
+        maps[maps > threshold] = 1
+        maps[maps <= threshold] = 0
+        input = apply_method(input, maps)
 
         target = target.cuda(async=True)
-        input_var = torch.autograd.Variable(input, volatile=True).cuda()
-        target_var = torch.autograd.Variable(target, volatile=True).cuda()
+        input_var = torch.autograd.Variable(input, volatile=True)
+        target_var = torch.autograd.Variable(target, volatile=True)
         if args.use_cuda:
             input_var = input_var.cuda()
             target_var = target_var.cuda()
@@ -148,7 +145,7 @@ def validate(val_loader, model, criterion, map_dataset=None, apply_method=None):
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
-        prec1, prec5 = accuracy(output.data, target, topk=(1))
+        prec1, = accuracy(output.data, target, topk=(1,))
         losses.update(loss.data[0], input.size(0))
         top1.update(prec1[0], input.size(0))
         # top5.update(prec5[0], input.size(0))
@@ -163,13 +160,12 @@ def validate(val_loader, model, criterion, map_dataset=None, apply_method=None):
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
                   'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'.format(
                 i, len(val_loader), batch_time=batch_time, loss=losses,
-                top1=top1))
+                top1=top1,))
 
     print(' * Prec@1 {top1.avg:.3f}'
           .format(top1=top1,))
 
-    return top1.avg
-
+    return top1.avg, losses.avg
 
 def accuracy(output, target, topk=(1,)):
     """Computes the precision@k for the specified values of k"""
@@ -211,22 +207,14 @@ def main():
     for i in range(args.epoch):
         train(train_loader, model, criterion, optimizer, i)
 
-    val_map_dataset = MapValDataset(args.val_map_dir)
-    val_dataset = dataset_factory[args.dataset](args.val_dir, False)
+    val_dataset = MapValDataset(args.val_map_dir)
     val_loader = torch.utils.data.DataLoader(
         val_dataset, batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=False)
 
-    p1 = validate(val_loader, model, criterion, val_map_dataset, args.apply_method)
+    p1, loss = validate(val_loader, model, criterion, args.apply_method, args.threshold)
 
-    filename = '{0}_{1}_{2}_{3}_{4}_{6}_map.pkl'.format(args.model, args.dataset, str(args.classes), str(args.epoch),
-                                                    str(p1), args.description)
-    path = os.path.join(args.model_path, filename)
-    if not os.path.exists(args.model_path):
-        os.makedirs(args.model_path)
-    torch.save(model, path)
-
-    file = open(args.output, 'xa')
+    file = open(args.output, 'a')
     file.write('map {0} \t threshold {1} \t precision {2} \n'.format(args.map_dir, args.threshold, p1))
     file.close()
 
