@@ -31,7 +31,7 @@ def apply(dataset, map, method):
         if input.dim() < 4:
             input = input.unsqueeze(0)
         if applied is None:
-            applied = np.zeros((args.limit, input.shape[0], input.shape[1], input.shape[2]))
+            applied = np.zeros((args.limit, input.shape[1], input.shape[2], input.shape[3]))
             y = np.zeros((len(dataset), 1))
         applied[i, :, :, :] = method(input, torch.from_numpy(map[i, :, :]).unsqueeze(0))
         y[i, :] = target
