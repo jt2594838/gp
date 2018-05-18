@@ -106,7 +106,7 @@ def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
     print(' * Prec@1 {top1.avg:.3f}'
           .format(top1=top1,))
 
-    return top1.avg
+    return top1.avg, losses.avg
 
 
 def accuracy(output, target, topk=(1,)):
@@ -142,26 +142,32 @@ def main(threshold):
 
     # p1, p5 = validate(val_loader, model, criterion)
     # print('Validate result without map: top1 {0}, top5 {1}, all {2}'.format(p1, p5, all))
-    p1 = validate(val_loader, model, criterion, args.apply_method, threshold)
+    p1, loss = validate(val_loader, model, criterion, args.apply_method, threshold)
     print('Validate result with map: top1 {0}, threshold {1}'.format(p1, threshold))
     file = open(args.output, 'a')
     file.write('map {0} \t threshold {1} \t precision {2} \n'.format(args.map_dir, threshold, p1))
     file.close()
 
-    return p1
+    return p1, loss
 
 
 if __name__ == '__main__':
     args.threshold = args.threshold.split(',')
-    summary = []
+    summary_prec = []
+    summary_loss = []
     for threshold in args.threshold:
-        sum = 0.0
+        sum_prec = 0.0
+        sum_loss = 0.0
         for i in range(args.repeat):
-            sum += main(float(threshold))
-        sum /= args.repeat
-        summary.append(sum)
+            prec, loss = main(float(threshold))
+            sum_prec += prec
+            sum_loss += loss
+        sum_prec /= args.repeat
+        sum_loss /= args.repeat
+        summary_prec.append(sum_prec)
+        summary_loss.append(sum_loss)
 
     file = open(args.output, 'a')
     for i in range(len(args.threshold)):
-        file.write('threshold {}, avg {} \n'.format(args.threshold[i], summary[i]))
+        file.write('threshold {}, prec avg {}, loss avg {} \n'.format(args.threshold[i], summary_prec[i], summary_loss[i]))
     file.close()
