@@ -28,6 +28,8 @@ def apply(dataset, map, method):
     applied = None
     y = None
     for i, (input, target) in enumerate(dataset):
+        if input.dim() < 4:
+            input = input.unsqueeze(0)
         if applied is None:
             applied = np.zeros((args.limit, input.shape[0], input.shape[1], input.shape[2]))
             y = np.zeros((len(dataset), 1))
