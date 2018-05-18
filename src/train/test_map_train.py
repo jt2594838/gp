@@ -186,7 +186,7 @@ def main():
     if not os.path.exists(args.train_dir):
         os.makedirs(args.train_dir)
 
-    model = nets.net_factory[args.model](args.classes)
+    model = nets.net_factory[args.model](args.classes, args.pretrained, args.in_channels, classify=True)
     train_dataset = H5Dataset(args.train_dir, use_transform=False)
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=False,
