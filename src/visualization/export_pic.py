@@ -1,4 +1,7 @@
 import sys
+
+import torch
+
 sys.path.append('.')
 sys.path.append('..')
 
@@ -23,12 +26,12 @@ def main():
     if not os.path.exists(args.output):
         os.mkdir(args.output)
 
-    x = input_file['x'][:]
-    y = input_file['y'][:]
+    x = torch.from_numpy(input_file['x'][:])
+    y = torch.from_numpy(input_file['y'][:])
     map = None
     apply_method = None
     if args.use_map:
-        map = input_file['y'][:]
+        map = torch.from_numpy(input_file['y'][:])
         apply_method = apply_methods[args.apply_method]
 
     for i in range(x.shape[0]):
@@ -40,8 +43,8 @@ def main():
             pic = apply_method(pic, map)
             map_name = '{}_{}_map.jpg'.format(i, y[i])
             map_path = os.path.join(args.output, map_name)
-            plt.imsave(map_path, map)
-        plt.imsave(pic_path, pic)
+            plt.imsave(map_path, map.numpy())
+        plt.imsave(pic_path, pic.numpy())
         if (i + 1) % 100 == 0:
             print('{} pics exported'.format(i + 1))
     print('Pic export over.')
