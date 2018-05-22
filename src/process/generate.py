@@ -3,6 +3,7 @@ import time
 import torch
 from torch.autograd import Variable
 from skimage.segmentation import slic
+import numpy as np
 from skimage.util import img_as_float
 
 channel_num = 1
@@ -92,6 +93,50 @@ def gen_sensitive_map_rect_greed(model, pic, label, size, criterion, window_proc
     return map
 
 
+def gen_sensitive_map_rect_greed_rnd(model, pic, label, size, criterion, window_processor, update_err=False, use_cuda=True):
+    """
+        1. calculate the output of the picture by the net and its error w.r.t the label
+        2. create a temp picture with 1 channel and the same size as the input
+        3. divide the origin picture into rectangle areas
+        4. choose random area, process it with window_processor
+            4.1 use the processed picture as network input, calculate the output and error
+            4.2 if the new error is lower than the origin one, record the difference of the two errors in the temp picture, with
+                with the same position as the current area and update the standard error if needed
+            4.3 else recover the values in this area
+        5. return the temp picture
+    """
+    map = torch.zeros((1, pic.size()[2], pic.size()[3]))
+    window_tensor = torch.zeros(pic.size()[1], size[0], size[1])
+    xlimit = pic.size(2)
+    ylimit = pic.size(3)
+    label = Variable(label, requires_grad=False)
+    pic = Variable(pic, requires_grad=False)
+    if use_cuda:
+        label = label.cuda()
+        pic = pic.cuda()
+    std_out = model(pic)
+    std_err = criterion(std_out, label)
+    x_num = int(np.ceil(xlimit / size[0]))
+    y_num = int(np.ceil(ylimit / size[1]))
+    for i in np.random.choice(x_num, x_num, replace=False):
+        for j in np.random.choice(y_num, y_num, replace=False):
+            curr_x = i * size[0]
+            curr_y = j * size[1]
+            end_x = curr_x + size[0] if curr_x + size[0] < xlimit else xlimit
+            end_y = curr_y + size[1] if curr_y + size[1] < ylimit else ylimit
+            pic.data[0, :, curr_x:end_x, curr_y:end_y] = window_processor(pic.data[0, :, curr_x:end_x, curr_y:end_y])
+            curr_out = model(pic)
+            curr_err = criterion(curr_out, label)
+            if curr_err.data[0] < std_err.data[0]:
+                map[0, curr_x:end_x, curr_y:end_y] = std_err.data[0] - curr_err.data[0]
+                if update_err:
+                    std_err.data[0] = curr_err.data[0]
+            else:
+                pic.data[0, :, curr_x:end_x, curr_y:end_y] = window_tensor[:, 0:(end_x - curr_x), 0:(end_y - curr_y)]
+            curr_x += size[0]
+    return map
+
+
 def gen_map_superpixel_zero(model, pic, label, size, criterion, window_processor, update_err=False, use_cuda=True):
     n_segments = size[0]
     superpixels = slic(pic.squeeze(), n_segments=n_segments, compactness=10)
@@ -128,6 +173,53 @@ def gen_map_superpixel_zero(model, pic, label, size, criterion, window_processor
             pic.data[:] = temp_tensor[:]
             if update_err:
                 std_err.data[0] = curr_err.data[0]
+    return map
+
+
+def gen_map_superpixel_zero_rnd(model, pic, label, size, criterion, window_processor, update_err=False, use_cuda=True):
+    n_segments = size[0]
+    superpixels = slic(pic.squeeze(), n_segments=n_segments, compactness=10)
+    height = pic.size()[2]
+    width = pic.size()[3]
+    map = torch.zeros((1, height, width))
+    temp_tensor = torch.zeros(pic.size())
+    label = Variable(label, requires_grad=False)
+    pic = Variable(pic, requires_grad=False)
+    if use_cuda:
+        label = label.cuda()
+        pic = pic.cuda()
+    std_out = model(pic)
+    std_err = criterion(std_out, label)
+    if use_cuda:
+        label = label.cuda()
+        pic = pic.cuda()
+
+    seg_list = {}
+    for i in n_segments:
+        seg_list[str(i)] = []
+    for i in range(height):
+        for j in range(width):
+            seg_list[str(superpixels[i, j])].append((i, j))
+
+    for i in np.random.choice(n_segments, n_segments, replace=False):
+        seg_coords = seg_list[str(i)]
+        for (j, k) in seg_coords:
+            temp_tensor[0, :, j, k] = pic.data[0, :, j, k]
+            pic.data[0, :, j, k] = 0
+        temp_var = Variable(pic, requires_grad=False)
+        if use_cuda:
+            temp_var = temp_var.cuda()
+        curr_out = model(temp_var)
+        curr_err = criterion(curr_out, label)
+        if curr_err.data[0] < std_err.data[0]:
+            for (j, k) in seg_coords:
+                map[0, j, k] = std_err.data[0] - curr_err.data[0]
+            if update_err:
+                std_err.data[0] = curr_err.data[0]
+        else:
+            for (j, k) in seg_coords:
+                pic.data[0, :, j, k] = temp_tensor[0, :, j, k]
+
     return map
 
 
@@ -230,7 +322,9 @@ def avg_processor(tensor):
 
 gen_methods = {
     'rect_greed': gen_sensitive_map_rect_greed,
+    'rect_rnd': gen_sensitive_map_rect_greed_rnd,
     'super_pixel_zero': gen_map_superpixel_zero,
+    'super_pixel_zero_rnd': gen_sensitive_map_rect_greed_rnd,
     'super_pixel_one': gen_map_superpixel_one,
 }
 
