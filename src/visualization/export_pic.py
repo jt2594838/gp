@@ -1,3 +1,7 @@
+import sys
+sys.path.append('.')
+sys.path.append('..')
+
 import argparse
 import h5py as h5
 import matplotlib.pylab as plt
