@@ -15,6 +15,7 @@ args = parser.parse_args()
 
 def main():
     input_file = h5.File(args.input)
+    args.output = os.path.join(args.output, os.path.basename(args.input))
     if not os.path.exists(args.output):
         os.mkdir(args.output)
 
