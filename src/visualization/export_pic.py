@@ -31,7 +31,7 @@ def main():
     map = None
     apply_method = None
     if args.use_map:
-        map = torch.from_numpy(input_file['y'][:])
+        map = torch.from_numpy(input_file['map'][:])
         apply_method = apply_methods[args.apply_method]
 
     for i in range(x.shape[0]):
