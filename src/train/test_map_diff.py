@@ -166,6 +166,7 @@ def main(threshold):
     file.create_dataset('label', data=label_numpy)
     file.create_dataset('id', data=id_numpy)
     file.close()
+    print('diff extraction over')
 
 
 if __name__ == '__main__':
