@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append('.')
 sys.path.append('..')
 
@@ -23,15 +24,18 @@ parser.add_argument('-weight_decay', type=float, default=1e-4)
 parser.add_argument('-epoch', type=int, default=200)
 parser.add_argument('-print_freq', type=int, default=1)
 parser.add_argument('-classes', type=int, default=3)
-parser.add_argument('-train_dir', type=str, default="/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_0.09455910949409008_unpreprocessed_VGG16_train_l5000.h5.applied")
+parser.add_argument('-train_dir', type=str,
+                    default="/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_0.09455910949409008_unpreprocessed_VGG16_train_l5000.h5.applied")
 parser.add_argument('-val_dir', type=str, default="./data/val_data/")
 parser.add_argument('-dataset', type=str, default='CIFAR_10')
 parser.add_argument('-in_channels', type=int, default=1)
 parser.add_argument('-pretrained', type=bool, default=False)
 parser.add_argument('-model', type=str, default='ResNet101')
 parser.add_argument('-momentum', type=float, default=0.9)
-parser.add_argument('-model_path', type=str, default='/home/jt/codes/bs/nb/src/train/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl')
-parser.add_argument('-val_map_dir', type=str, default='/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_unpreprocessed_0.09455910949409008_VGG16_0.9_79.11_98.59_validate.h5')
+parser.add_argument('-model_path', type=str,
+                    default='/home/jt/codes/bs/nb/src/train/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl')
+parser.add_argument('-val_map_dir', type=str,
+                    default='/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_unpreprocessed_0.09455910949409008_VGG16_0.9_79.11_98.59_validate.h5')
 parser.add_argument('-use_cuda', type=bool, default=True)
 parser.add_argument('-gpu_no', type=str, default='0')
 parser.add_argument('-description', type=str, default='l5000')
@@ -46,6 +50,7 @@ args.apply_method = apply_methods[args.apply_method]
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
+
     def __init__(self):
         self.reset()
 
@@ -123,7 +128,7 @@ def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
     for i, (input, target, maps) in enumerate(val_loader):
         for j in range(maps.size(0)):
             maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
-                        torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
+                    torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
         maps[maps > threshold] = 1
         maps[maps <= threshold] = 0
         input = apply_method(input, maps)
@@ -155,12 +160,13 @@ def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
                   'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'.format(
                 i, len(val_loader), batch_time=batch_time, loss=losses,
-                top1=top1,))
+                top1=top1, ))
 
     print(' * Prec@1 {top1.avg:.3f}'
-          .format(top1=top1,))
+          .format(top1=top1, ))
 
     return top1.avg, losses.avg
+
 
 def accuracy(output, target, topk=(1,)):
     """Computes the precision@k for the specified values of k"""
@@ -216,5 +222,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

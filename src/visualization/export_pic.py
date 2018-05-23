@@ -44,7 +44,7 @@ def main():
             map_name = '{}_{}_map.jpg'.format(i, y[i])
             map_path = os.path.join(args.output, map_name)
             plt.imsave(map_path, map.numpy())
-        plt.imsave(pic_path, pic.numpy())
+        plt.imsave(pic_path, pic.numpy(), cmap='gray')
         if (i + 1) % 100 == 0:
             print('{} pics exported'.format(i + 1))
     print('Pic export over.')
