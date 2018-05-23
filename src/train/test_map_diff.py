@@ -1,0 +1,143 @@
+import sys
+
+sys.path.append('.')
+sys.path.append('..')
+
+import argparse
+import os
+import time
+
+import torch
+import torch.nn as nn
+import h5py as h5
+
+from process.apply import apply_methods
+from dataset.MapValDataset import MapValDataset
+
+parser = argparse.ArgumentParser(description='Train a basic classifier')
+parser.add_argument('-workers', type=int, default=1)
+parser.add_argument('-print_freq', type=int, default=100)
+parser.add_argument('-classes', type=int, default=3)
+parser.add_argument('-map_dir', type=str,
+                    default="/home/jt/codes/bs/gp/res/maps/Deeplab_CIFAR_10_unpreprocessed_VGG16_validate.h5")
+parser.add_argument('-dataset', type=str, default='CIFAR_10')
+parser.add_argument('-pretrained', type=bool, default=False)
+parser.add_argument('-model', type=str, default='ResNet101')
+parser.add_argument('-model_path', type=str,
+                    default='/home/jt/codes/bs/gp/res/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl')
+parser.add_argument('-use_cuda', type=bool, default=True)
+parser.add_argument('-gpu_no', type=str, default='0')
+parser.add_argument('-description', type=str, default='unpreprocessed_ResNet')
+parser.add_argument('-threshold', type=float, default=0.9)
+parser.add_argument('-apply_method', type=str, default='apply_loss4D')
+parser.add_argument('-output', type=str, default="./output")
+parser.add_argument('-repeat', type=int, default=1)
+
+args = parser.parse_args()
+args.apply_method = apply_methods[args.apply_method]
+args.batch_size = 1
+
+
+class AverageMeter(object):
+    """Computes and stores the average and current value"""
+
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
+
+
+def find_diff(val_loader, model, criterion, apply_method=None, threshold=1.0):
+
+    # switch to evaluate mode
+    model.eval()
+    x0 = [], y0 = [], loss0 = []
+    x1 = [], y1 = [], loss1 = []
+    label = [], id = []
+
+    end = time.time()
+    for i, (input, target, maps) in enumerate(val_loader):
+        for j in range(maps.size(0)):
+            maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
+                        torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
+        maps[maps > threshold] = 1
+        maps[maps <= threshold] = 0
+        applied = apply_method(input, maps)
+
+        target = target.cuda(async=True)
+        input_var = torch.autograd.Variable(input, volatile=True)
+        applied_var = torch.autograd.Variable(applied, volatile=True)
+        target_var = torch.autograd.Variable(target, volatile=True)
+        if args.use_cuda:
+            input_var = input_var.cuda()
+            applied_var = applied_var.cuda()
+            target_var = target_var.cuda()
+
+        # compute output
+        output = model(input_var)
+        applied_output = model(applied_var)
+        _, output_label = output.topk(1, 1, True, True)
+        _, applied_label = applied_output.topl(1, 1, True, True)
+        loss = criterion(output, target_var)
+        applied_loss = criterion(applied_output, target_var)
+
+        if applied_loss.data[0] < loss.data[0]:
+            x0.append(input)
+            y0.append(output_label)
+            loss0.append(loss.data[0])
+            x1.append(applied)
+            y1.append(applied_label)
+            loss1.append(applied_loss[0])
+            label.append(target)
+            id.append(i)
+
+        if i % args.print_freq == 0:
+            print('Test: [{0}/{1}]\t {2} diffs found'.format(
+                i, len(val_loader), len(x0)))
+
+    return x0, y0, loss0, x1, y1, loss1, label, id
+
+
+def main(threshold):
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
+
+    model = torch.load(args.model_path)
+    criterion = nn.CrossEntropyLoss()
+
+    if args.use_cuda:
+        model = model.cuda()
+        criterion = criterion.cuda()
+
+    map_dataset = MapValDataset(args.map_dir)
+    val_loader = torch.utils.data.DataLoader(
+        map_dataset, batch_size=args.batch_size, shuffle=False,
+        num_workers=args.workers, pin_memory=False)
+
+    # p1, p5 = validate(val_loader, model, criterion)
+    # print('Validate result without map: top1 {0}, top5 {1}, all {2}'.format(p1, p5, all))
+    x0, y0, loss0, x1, y1, loss1, label, id = find_diff(val_loader, model, criterion, args.apply_method, threshold)
+    print('Validate result with map: top1 {0}, threshold {1}'.format(p1, threshold))
+    file = h5.File(args.output)
+    file.create_dataset('x0', data=x0)
+    file.create_dataset('y0', data=y0)
+    file.create_dataset('loss0', data=loss0)
+    file.create_dataset('x1', data=x1)
+    file.create_dataset('y1', data=y1)
+    file.create_dataset('loss1', data=loss1)
+    file.create_dataset('label', data=label)
+    file.create_dataset('id', data=id)
+    file.close()
+
+
+if __name__ == '__main__':
+    main(args.threshold)

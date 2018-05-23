@@ -49,7 +49,7 @@ def main():
             plt.imsave(map_path, map.numpy())
             plt.imsave(applied_path, applied.numpy())
         pic = pic.squeeze()
-        plt.imsave(pic_path, pic.numpy())
+        plt.imsave(pic_path, pic.numpy(), cmap='gray')
         if (i + 1) % 100 == 0:
             print('{} pics exported'.format(i + 1))
     print('Pic export over.')
