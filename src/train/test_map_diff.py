@@ -72,6 +72,8 @@ def find_diff(val_loader, model, criterion, apply_method=None, threshold=1.0):
 
     end = time.time()
     for i, (input, target, maps) in enumerate(val_loader):
+        input = input.unsqueeze(0)
+        maps = maps.unsqueeze(0)
         for j in range(maps.size(0)):
             maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
                         torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
