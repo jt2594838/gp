@@ -61,9 +61,14 @@ def find_diff(val_loader, model, criterion, apply_method=None, threshold=1.0):
 
     # switch to evaluate mode
     model.eval()
-    x0 = [], y0 = [], loss0 = []
-    x1 = [], y1 = [], loss1 = []
-    label = [], id = []
+    x0 = []
+    y0 = []
+    loss0 = []
+    x1 = []
+    y1 = []
+    loss1 = []
+    label = []
+    id = []
 
     end = time.time()
     for i, (input, target, maps) in enumerate(val_loader):
