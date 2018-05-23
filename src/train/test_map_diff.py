@@ -74,6 +74,8 @@ def find_diff(val_loader, model, criterion, apply_method=None, threshold=1.0):
     for i, (input, target, maps) in enumerate(val_loader):
         input = input.unsqueeze(0)
         maps = maps.unsqueeze(0)
+        target_tensor = torch.zeros(1)
+        target_tensor[0] = target
         for j in range(maps.size(0)):
             maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
                         torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
@@ -81,10 +83,9 @@ def find_diff(val_loader, model, criterion, apply_method=None, threshold=1.0):
         maps[maps <= threshold] = 0
         applied = apply_method(input, maps)
 
-        target = target.cuda(async=True)
         input_var = torch.autograd.Variable(input, volatile=True)
         applied_var = torch.autograd.Variable(applied, volatile=True)
-        target_var = torch.autograd.Variable(target, volatile=True)
+        target_var = torch.autograd.Variable(target_tensor, volatile=True)
         if args.use_cuda:
             input_var = input_var.cuda()
             applied_var = applied_var.cuda()
