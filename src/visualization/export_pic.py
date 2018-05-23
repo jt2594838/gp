@@ -27,11 +27,11 @@ def main():
         os.mkdir(args.output)
 
     x = torch.from_numpy(input_file['x'][:])
-    y = torch.from_numpy(input_file['y'][:])
+    y = torch.from_numpy(input_file['y'][:]).long()
     map = None
     apply_method = None
     if args.use_map:
-        map = torch.from_numpy(input_file['map'][:])
+        maps = torch.from_numpy(input_file['map'][:])
         apply_method = apply_methods[args.apply_method]
 
     for i in range(x.shape[0]):
@@ -39,11 +39,16 @@ def main():
         pic_name = '{}_{}.jpg'.format(i, y[i])
         pic_path = os.path.join(args.output, pic_name)
         if args.use_map:
-            map = map[i]
-            pic = apply_method(pic, map)
+            map = maps[i]
+            applied = apply_method(pic, map).squeeze()
             map_name = '{}_{}_map.jpg'.format(i, y[i])
             map_path = os.path.join(args.output, map_name)
+            applied_name = '{}_{}_applied.jpg'.format(i, y[i])
+            applied_path = os.path.join(args.output,applied_name)
+            map = map.squeeze()
             plt.imsave(map_path, map.numpy())
+            plt.imsave(applied_path, applied.numpy())
+        pic = pic.squeeze()
         plt.imsave(pic_path, pic.numpy(), cmap='gray')
         if (i + 1) % 100 == 0:
             print('{} pics exported'.format(i + 1))
