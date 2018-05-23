@@ -131,7 +131,7 @@ def main(threshold):
     # p1, p5 = validate(val_loader, model, criterion)
     # print('Validate result without map: top1 {0}, top5 {1}, all {2}'.format(p1, p5, all))
     x0, y0, loss0, x1, y1, loss1, label, id = find_diff(val_loader, model, criterion, args.apply_method, threshold)
-    print('Validate result with map: top1 {0}, threshold {1}'.format(p1, threshold))
+
     file = h5.File(args.output)
     file.create_dataset('x0', data=x0)
     file.create_dataset('y0', data=y0)
