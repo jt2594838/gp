@@ -85,7 +85,7 @@ def find_diff(val_loader, model, criterion, apply_method=None, threshold=1.0):
 
         input_var = torch.autograd.Variable(input, volatile=True)
         applied_var = torch.autograd.Variable(applied, volatile=True)
-        target_var = torch.autograd.Variable(target_tensor, volatile=True)
+        target_var = torch.autograd.Variable(target_tensor, volatile=True).long()
         if args.use_cuda:
             input_var = input_var.cuda()
             applied_var = applied_var.cuda()
