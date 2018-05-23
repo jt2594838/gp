@@ -124,13 +124,10 @@ def main(threshold):
         criterion = criterion.cuda()
 
     map_dataset = MapValDataset(args.map_dir)
-    val_loader = torch.utils.data.DataLoader(
-        map_dataset, batch_size=args.batch_size, shuffle=False,
-        num_workers=args.workers, pin_memory=False)
 
     # p1, p5 = validate(val_loader, model, criterion)
     # print('Validate result without map: top1 {0}, top5 {1}, all {2}'.format(p1, p5, all))
-    x0, y0, loss0, x1, y1, loss1, label, id = find_diff(val_loader, model, criterion, args.apply_method, threshold)
+    x0, y0, loss0, x1, y1, loss1, label, id = find_diff(map_dataset, model, criterion, args.apply_method, threshold)
 
     file = h5.File(args.output)
     file.create_dataset('x0', data=x0)
