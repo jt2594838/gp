@@ -156,6 +156,7 @@ def main(threshold):
         label_numpy[i] = label[i]
         id_numpy[i] = id[i]
 
+    print('writing results to {}'.format(args.output))
     file = h5.File(args.output)
     file.create_dataset('x0', data=x0_numpy)
     file.create_dataset('y0', data=y0_numpy)
