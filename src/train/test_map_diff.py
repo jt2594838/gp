@@ -13,6 +13,7 @@ import h5py as h5
 
 from process.apply import apply_methods
 from dataset.MapValDataset import MapValDataset
+import numpy as np
 
 parser = argparse.ArgumentParser(description='Train a basic classifier')
 parser.add_argument('-workers', type=int, default=1)
@@ -132,15 +133,38 @@ def main(threshold):
     # print('Validate result without map: top1 {0}, top5 {1}, all {2}'.format(p1, p5, all))
     x0, y0, loss0, x1, y1, loss1, label, id = find_diff(map_dataset, model, criterion, args.apply_method, threshold)
 
+    diff_len = len(x0)
+    depth = x0[0].shape[1]
+    height = x0[0].shape[2]
+    width = x0[0].shape[3]
+    x0_numpy = np.zeros((diff_len, depth, height, width))
+    y0_numpy = np.zeros(diff_len)
+    loss0_numpy = np.zeros(diff_len)
+    x1_numpy = np.zeros((diff_len, depth, height, width))
+    y1_numpy = np.zeros(diff_len)
+    loss1_numpy = np.zeros(diff_len)
+    label_numpy = np.zeros(diff_len)
+    id_numpy = np.zeros(diff_len)
+
+    for i in range(diff_len):
+        x0_numpy[i, :, :, :] = x0[i][0, :, :, :]
+        y0_numpy[i] = y0[i]
+        loss0_numpy[i] = loss0[i]
+        x1_numpy[i, :, :, :] = x1[i][0, :, :, :]
+        y1_numpy[i] = y1[i]
+        loss1_numpy[i] = loss1[i]
+        label_numpy[i] = label[i]
+        id_numpy[i] = id[i]
+
     file = h5.File(args.output)
-    file.create_dataset('x0', data=x0)
-    file.create_dataset('y0', data=y0)
-    file.create_dataset('loss0', data=loss0)
-    file.create_dataset('x1', data=x1)
-    file.create_dataset('y1', data=y1)
-    file.create_dataset('loss1', data=loss1)
-    file.create_dataset('label', data=label)
-    file.create_dataset('id', data=id)
+    file.create_dataset('x0', data=x0_numpy)
+    file.create_dataset('y0', data=y0_numpy)
+    file.create_dataset('loss0', data=loss0_numpy)
+    file.create_dataset('x1', data=x1_numpy)
+    file.create_dataset('y1', data=y1_numpy)
+    file.create_dataset('loss1', data=loss1_numpy)
+    file.create_dataset('label', data=label_numpy)
+    file.create_dataset('id', data=id_numpy)
     file.close()
 
 
