@@ -92,7 +92,7 @@ def find_diff(val_loader, model, criterion, apply_method=None, threshold=1.0):
         output = model(input_var)
         applied_output = model(applied_var)
         _, output_label = output.topk(1, 1, True, True)
-        _, applied_label = applied_output.topl(1, 1, True, True)
+        _, applied_label = applied_output.topk(1, 1, True, True)
         loss = criterion(output, target_var)
         applied_loss = criterion(applied_output, target_var)
 
