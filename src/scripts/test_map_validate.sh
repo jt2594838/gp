@@ -14,6 +14,7 @@ apply_method="apply_loss4D"
 gpu_no="0"
 output="./output"
 repeat=10
+criterion="auc_roc"
 
 python -u ${python_file} \
         -batch_size ${batch_size} \
@@ -30,4 +31,5 @@ python -u ${python_file} \
         -apply_method ${apply_method} \
         -gpu_no ${gpu_no}  \
         -output ${output}   \
-        -repeat ${repeat}
+        -repeat ${repeat}   \
+        -criterion  ${criterion}
