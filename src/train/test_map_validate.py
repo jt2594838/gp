@@ -143,7 +143,7 @@ def validate_auc(val_loader, model, apply_method=None, threshold=1.0):
         output = output / torch.sum(output)
 
         labels[i] = 0 if target[0] == 0 else 1
-        scores[i] = 1.0 - output.data[0]
+        scores[i] = 1.0 - output.data[0, 0]
 
         # measure elapsed time
         batch_time.update(time.time() - end)
