@@ -63,6 +63,7 @@ def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
     batch_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
+    confusion_matrix = torch.zeros((args.classes, args.classes))
     # top5 = AverageMeter()
 
     # switch to evaluate mode
@@ -88,7 +89,7 @@ def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
-        prec1, = accuracy(output.data, target, topk=(1,))
+        prec1, = accuracy(output.data, target, topk=(1,), confusion_matrix=confusion_matrix)
         losses.update(loss.data[0], input.size(0))
         top1.update(prec1[0], input.size(0))
         # top5.update(prec5[0], input.size(0))
@@ -105,10 +106,28 @@ def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
                 i, len(val_loader), batch_time=batch_time, loss=losses,
                 top1=top1,))
 
-    print(' * Prec@1 {top1.avg:.3f}'
-          .format(top1=top1,))
+    all_prec = 0
+    for i in range(args.classes):
+        all_prec += confusion_matrix[i, i]
+        all_prec /= torch.sum(confusion_matrix)
 
-    return top1.avg, losses.avg
+    all_recall = 0
+    for i in range(1, args.classes):
+        all_recall += confusion_matrix[i, i]
+        all_recall /= torch.sum(confusion_matrix[1:, :])
+
+    precs = []
+    recalls = []
+    for i in range(args.classes):
+        prec = confusion_matrix[i, i] / torch.sum(confusion_matrix[:, i])
+        recall = confusion_matrix[i, i] / torch.sum(confusion_matrix[i, :])
+        precs.append(prec)
+        recalls.append(recall)
+
+    print(' * All prec {}, All recall {}, precs {}, recalls {}, loss {}'
+          .format(all_prec, all_recall, precs, recalls, losses.avg))
+
+    return all_prec, all_recall, precs, recalls, losses.avg
 
 
 def validate_auc(val_loader, model, apply_method=None, threshold=1.0):
@@ -161,23 +180,26 @@ def validate_auc(val_loader, model, apply_method=None, threshold=1.0):
     return auc_roc
 
 
-def accuracy(output, target, topk=(1,)):
+def accuracy(output, target, topk=(1,), confusion_matrix=None):
     """Computes the precision@k for the specified values of k"""
     maxk = max(topk)
     batch_size = target.size(0)
 
     _, pred = output.topk(maxk, 1, True, True)
     pred = pred.t()
-    correct = pred.eq(target.view(1, -1).expand_as(pred))
+    pred_correct = pred.eq(target.view(1, -1).expand_as(pred))
+    if confusion_matrix is not None:
+        for i in range(pred.size(1)):
+            confusion_matrix[target[i]][pred[0, i]] += 1
 
     res = []
     for k in topk:
-        correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
+        correct_k = pred_correct[:k].view(-1).float().sum(0, keepdim=True)
         res.append(correct_k.mul_(100.0 / batch_size))
     return res
 
 
-def main(threshold):
+def main(threshold, map_dir):
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
 
     model = torch.load(args.model_path)
@@ -187,25 +209,24 @@ def main(threshold):
         model = model.cuda()
         criterion = criterion.cuda()
 
-    map_dataset = MapValDataset(args.map_dir)
+    map_dataset = MapValDataset(map_dir)
     val_loader = torch.utils.data.DataLoader(
         map_dataset, batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=False)
 
     if args.criterion == 'prec':
-        p1, loss = validate(val_loader, model, criterion, args.apply_method, threshold)
-        print('Validate result with map: {0} {1}, threshold {2}'.format(args.criterion, p1, threshold))
+        all_prec, all_recall, precs, recalls, loss = validate(val_loader, model, criterion, args.apply_method, threshold)
+        print('Validate result with map: {0} {1} {2} {3} {4} {5}, threshold {2}'.format(args.criterion, all_prec, all_recall, precs, recalls, loss, threshold))
         file = open(args.output, 'a')
-        file.write('map {0} \t threshold {1} \t {2} {3} \n'.format(args.map_dir, threshold, args.criterion, p1))
+        file.write('map {0} \t threshold {1} \t all_prec {2} all_recall {3} precs {4} recalls {5} loss {6}\n'.format(
+            args.map_dir, threshold,  all_prec, all_recall, precs, recalls, loss))
         file.close()
-        return p1, loss
     elif args.criterion == 'auc_roc':
         auc_roc = validate_auc(val_loader, model, args.apply_method, threshold)
         print('Validate result with map: auc_roc {0}, threshold {1}'.format(auc_roc, threshold))
         file = open(args.output, 'a')
         file.write('map {0} \t threshold {1} \t auc_roc {2} \n'.format(args.map_dir, threshold, auc_roc))
         file.close()
-        return auc_roc, 0.0
     else:
         print('Invalid criterion {}'.format(args.criterion))
         exit(-1)
@@ -213,21 +234,18 @@ def main(threshold):
 
 if __name__ == '__main__':
     args.threshold = args.threshold.split(',')
-    summary_prec = []
-    summary_loss = []
-    for threshold in args.threshold:
-        sum_prec = 0.0
-        sum_loss = 0.0
-        for i in range(args.repeat):
-            prec, loss = main(float(threshold))
-            sum_prec += prec
-            sum_loss += loss
-        sum_prec /= args.repeat
-        sum_loss /= args.repeat
-        summary_prec.append(sum_prec)
-        summary_loss.append(sum_loss)
+    if os.path.isfile(args.map_dir):
+        for threshold in args.threshold:
+            main(float(threshold), args.map_dir)
+    elif os.path.isdir(args.map_dir):
+        for file in os.listdir(args.map_dir):
+            file = os.path.join(args.map_dir, file)
+            if os.path.isfile(file):
+                for threshold in args.threshold:
+                    main(float(threshold), file)
+    else:
+        print('invalid path {}'.format(args.input))
 
-    file = open(args.output, 'a')
-    for i in range(len(args.threshold)):
-        file.write('threshold {}, {} avg {}, loss avg {} \n'.format(args.threshold[i], args.criterion, summary_prec[i], summary_loss[i]))
-    file.close()
+
+
+
