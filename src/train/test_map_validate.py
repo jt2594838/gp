@@ -202,7 +202,7 @@ def main(threshold):
         auc_roc = validate_auc(val_loader, model, args.apply_method, threshold)
         print('Validate result with map: auc_roc {0}, threshold {1}'.format(p1, threshold))
         file = open(args.output, 'a')
-        file.write('map {0} \t threshold {1} \t auc_roc {2} \n'.format(args.map_dir, threshold, p1))
+        file.write('map {0} \t threshold {1} \t auc_roc {2} \n'.format(args.map_dir, threshold, auc_roc))
         file.close()
         return auc_roc, 0.0
     else:
