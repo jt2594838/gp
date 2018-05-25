@@ -36,6 +36,7 @@ parser.add_argument('-apply_method', type=str, default='')
 parser.add_argument('-output', type=str, default="./output")
 parser.add_argument('-repeat', type=int, default=10)
 parser.add_argument('-criterion', type=str)
+parser.add_argument('-binary_threshold', type=bool, default=False)
 
 args = parser.parse_args()
 args.apply_method = apply_methods[args.apply_method]
@@ -75,7 +76,8 @@ def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
         for j in range(maps.size(0)):
             maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
                         torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
-        maps[maps > threshold] = 1
+        if args.binary_threshold:
+            maps[maps > threshold] = 1
         maps[maps <= threshold] = 0
         input = apply_method(input, maps)
 
@@ -149,7 +151,8 @@ def validate_auc(val_loader, model, apply_method=None, threshold=1.0):
         for j in range(maps.size(0)):
             maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
                     torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
-        # maps[maps > threshold] = 1
+        if args.binary_threshold:
+            maps[maps > threshold] = 1
         maps[maps <= threshold] = 0
         input = apply_method(input, maps)
 
