@@ -1,7 +1,5 @@
 import sys
 
-import sklearn
-
 sys.path.append('.')
 sys.path.append('..')
 
@@ -15,6 +13,7 @@ import numpy as np
 
 from process.apply import apply_methods
 from dataset.MapValDataset import MapValDataset
+from sklearn.metrics import roc_auc_score
 
 parser = argparse.ArgumentParser(description='Train a basic classifier')
 parser.add_argument('-batch_size', type=int, default=50)
@@ -154,7 +153,7 @@ def validate_auc(val_loader, model, apply_method=None, threshold=1.0):
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'.format(
                 i, len(val_loader), batch_time=batch_time))
 
-    auc_roc = sklearn.metrics.roc_auc_score(labels, scores)
+    auc_roc = roc_auc_score(labels, scores)
     print(' * auc_roc {}'
           .format(auc_roc))
 
