@@ -27,11 +27,12 @@ parser.add_argument('-pretrained', type=bool, default=False)
 parser.add_argument('-model', type=str, default='ResNet101')
 parser.add_argument('-model_path', type=str,
                     default='/home/jt/codes/bs/gp/res/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl')
+parser.add_argument('-weak_model_path', type=str)
 parser.add_argument('-use_cuda', type=bool, default=True)
 parser.add_argument('-gpu_no', type=str, default='0')
 parser.add_argument('-description', type=str, default='unpreprocessed_ResNet')
 parser.add_argument('-threshold', type=str, default="0.9, 1.0")
-parser.add_argument('-apply_method', type=str, default='apply_loss4D')
+parser.add_argument('-apply_method', type=str, default='')
 parser.add_argument('-output', type=str, default="./output")
 parser.add_argument('-repeat', type=int, default=10)
 parser.add_argument('-criterion', type=str)
@@ -202,7 +203,10 @@ def accuracy(output, target, topk=(1,), confusion_matrix=None):
 def main(threshold, map_dir):
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
 
-    model = torch.load(args.model_path)
+    if 'weak' in map_dir:
+        model = torch.load(args.weak_model_path)
+    else:
+        model = torch.load(args.model_path)
     criterion = nn.CrossEntropyLoss()
 
     if args.use_cuda:
@@ -213,6 +217,11 @@ def main(threshold, map_dir):
     val_loader = torch.utils.data.DataLoader(
         map_dataset, batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=False)
+
+    if 'zero' in map_dir:
+        args.apply_method = apply_methods['apply_loss4D']
+    elif 'one' in map_dir:
+        args.apply_method = apply_methods['apply_gain4D']
 
     if args.criterion == 'prec':
         all_prec, all_recall, precs, recalls, loss = validate(val_loader, model, criterion, args.apply_method, threshold)
