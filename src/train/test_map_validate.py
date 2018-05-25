@@ -217,14 +217,20 @@ def main(threshold, map_dir):
     if args.criterion == 'prec':
         all_prec, all_recall, precs, recalls, loss = validate(val_loader, model, criterion, args.apply_method, threshold)
         print('Validate result with map: {0} {1} {2} {3} {4} {5}, threshold {2}'.format(args.criterion, all_prec, all_recall, precs, recalls, loss, threshold))
-        file = open(args.output, 'a')
+        file_path = args.output
+        if args.use_dir:
+            file_path = os.path.join(file_path, os.path.basename(map_dir))
+        file = open(file_path, 'a')
         file.write('map {0} \t threshold {1} \t all_prec {2} all_recall {3} precs {4} recalls {5} loss {6}\n'.format(
             args.map_dir, threshold,  all_prec, all_recall, precs, recalls, loss))
         file.close()
     elif args.criterion == 'auc_roc':
         auc_roc = validate_auc(val_loader, model, args.apply_method, threshold)
         print('Validate result with map: auc_roc {0}, threshold {1}'.format(auc_roc, threshold))
-        file = open(args.output, 'a')
+        file_path = args.output
+        if args.use_dir:
+            file_path = os.path.join(file_path, os.path.basename(map_dir))
+        file = open(file_path, 'a')
         file.write('map {0} \t threshold {1} \t auc_roc {2} \n'.format(args.map_dir, threshold, auc_roc))
         file.close()
     else:
@@ -234,10 +240,12 @@ def main(threshold, map_dir):
 
 if __name__ == '__main__':
     args.threshold = args.threshold.split(',')
+    args.use_dir = False
     if os.path.isfile(args.map_dir):
         for threshold in args.threshold:
             main(float(threshold), args.map_dir)
     elif os.path.isdir(args.map_dir):
+        args.use_dir = True
         for file in os.listdir(args.map_dir):
             file = os.path.join(args.map_dir, file)
             if os.path.isfile(file):
