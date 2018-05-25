@@ -18,7 +18,7 @@ from sklearn.metrics import roc_auc_score
 parser = argparse.ArgumentParser(description='Train a basic classifier')
 parser.add_argument('-batch_size', type=int, default=50)
 parser.add_argument('-workers', type=int, default=1)
-parser.add_argument('-print_freq', type=int, default=1)
+parser.add_argument('-print_freq', type=int, default=100)
 parser.add_argument('-classes', type=int, default=3)
 parser.add_argument('-map_dir', type=str,
                     default="/home/jt/codes/bs/gp/res/maps/Deeplab_CIFAR_10_unpreprocessed_VGG16_validate.h5")
@@ -200,7 +200,7 @@ def main(threshold):
         return p1, loss
     elif args.criterion == 'auc_roc':
         auc_roc = validate_auc(val_loader, model, args.apply_method, threshold)
-        print('Validate result with map: auc_roc {0}, threshold {1}'.format(p1, threshold))
+        print('Validate result with map: auc_roc {0}, threshold {1}'.format(auc_roc, threshold))
         file = open(args.output, 'a')
         file.write('map {0} \t threshold {1} \t auc_roc {2} \n'.format(args.map_dir, threshold, auc_roc))
         file.close()
