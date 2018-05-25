@@ -32,14 +32,14 @@ def main():
 
     for i in range(x0.shape[0]):
         pic = x0[i]
-        pic_name = '{}_{}/{}_{}.jpg'.format(id[i], y0[i], label[i], loss0[i])
+        pic_name = '{}_{}_{}_{}.jpg'.format(int(id[i]), int(y0[i]), int(label[i]), loss0[i])
         pic_path = os.path.join(args.output, pic_name)
-        plt.imsave(pic_path, pic.numpy(), cmap='gray')
+        plt.imsave(pic_path, pic.squeeze(), cmap='gray')
 
         pic = x1[i]
-        pic_name = '{}_{}/{}_{}_applied.jpg'.format(id[i], y1[i], label[i], loss1[i])
+        pic_name = '{}_{}_{}_{}_applied.jpg'.format(int(id[i]), int(y1[i]), int(label[i]), loss1[i])
         pic_path = os.path.join(args.output, pic_name)
-        plt.imsave(pic_path, pic.numpy(), cmap='gray')
+        plt.imsave(pic_path, pic.squeeze(), cmap='gray')
         if (i + 1) % 100 == 0:
             print('{} pics exported'.format(i + 1))
     print('Pic export over.')
