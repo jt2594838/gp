@@ -137,9 +137,10 @@ def validate_auc(val_loader, model, apply_method=None, threshold=1.0):
             input_var = input_var.cuda()
 
         # compute output
-        output = model(input_var)
-        # output = (output - torch.min(output)) / (torch.max(output) - torch.min(output))
-        # output = output / torch.sum(output)
+        sigmoid = nn.Sigmoid()
+        output = sigmoid(model(input_var))
+        output = (output - torch.min(output)) / (torch.max(output) - torch.min(output))
+        output = output / torch.sum(output)
 
         labels[i] = 0 if target[0] == 0 else 1
         scores[i] = 1.0 - output.data[0, 0]
