@@ -50,5 +50,8 @@ if __name__ == '__main__':
         main(args.input)
     elif os.path.isdir(args.input):
         for file in os.listdir(args.input):
+            file = os.path.join(args.input, file)
             if os.path.isfile(file):
                 main(file)
+    else:
+        print('invalid path {}'.format(args.input))
