@@ -128,7 +128,7 @@ def validate_auc(val_loader, model, apply_method=None, threshold=1.0):
         for j in range(maps.size(0)):
             maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
                     torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
-        maps[maps > threshold] = 1
+        # maps[maps > threshold] = 1
         maps[maps <= threshold] = 0
         input = apply_method(input, maps)
 
