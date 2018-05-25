@@ -15,9 +15,9 @@ parser.add_argument('-output', type=str)
 args = parser.parse_args()
 
 
-def main():
-    input_file = h5.File(args.input)
-    args.output = os.path.join(args.output, os.path.basename(args.input))
+def main(input):
+    input_file = h5.File(input)
+    args.output = os.path.join(args.output, os.path.basename(input))
     if not os.path.exists(args.output):
         os.mkdir(args.output)
 
@@ -46,4 +46,9 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    if os.path.isfile(args.input):
+        main(args.input)
+    elif os.path.isdir(args.input):
+        for file in os.listdir(args.input):
+            if os.path.isfile(file):
+                main(file)
