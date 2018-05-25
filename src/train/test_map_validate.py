@@ -138,8 +138,8 @@ def validate_auc(val_loader, model, apply_method=None, threshold=1.0):
 
         # compute output
         output = model(input_var)
-        output = (output - torch.min(output)) / (torch.max(output) - torch.min(output))
-        output = output / torch.sum(output)
+        # output = (output - torch.min(output)) / (torch.max(output) - torch.min(output))
+        # output = output / torch.sum(output)
 
         labels[i] = 0 if target[0] == 0 else 1
         scores[i] = 1.0 - output.data[0, 0]
