@@ -221,7 +221,7 @@ def main(threshold, map_dir):
         if args.use_dir:
             file_path = os.path.join(file_path, os.path.basename(map_dir))
         file = open(file_path, 'a')
-        file.write('map {0} \t threshold {1} \t all_prec {2} all_recall {3} precs {4} recalls {5} loss {6}\n'.format(
+        file.write('map {0} \n\t threshold {1} \t all_prec {2} all_recall {3} precs {4} recalls {5} loss {6}\n'.format(
             args.map_dir, threshold,  all_prec, all_recall, precs, recalls, loss))
         file.close()
     elif args.criterion == 'auc_roc':
