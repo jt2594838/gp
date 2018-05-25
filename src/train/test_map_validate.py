@@ -134,17 +134,15 @@ def validate_auc(val_loader, model, apply_method=None, threshold=1.0):
         input = apply_method(input, maps)
 
         input_var = torch.autograd.Variable(input, volatile=True)
-        target_var = torch.autograd.Variable(target, volatile=True)
         if args.use_cuda:
             input_var = input_var.cuda()
-            target_var = target_var.cuda()
 
         # compute output
         output = model(input_var)
         output = (output - torch.min(output)) / (torch.max(output) - torch.min(output))
         output = output / torch.sum(output)
 
-        labels[i] = 0 if target == 0 else 1
+        labels[i] = 0 if target[0] == 0 else 1
         scores[i] = 1.0 - output.data[0]
 
         # measure elapsed time
