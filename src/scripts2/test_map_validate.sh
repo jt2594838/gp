@@ -14,6 +14,7 @@ gpu_no="2"
 output="/home/jiangtian/code/gp/res_anzhen/val_rst_recall2/"
 repeat=1
 criterion="prec"
+binary_threshold = "-binary_threshold 1"
 
 python -u ${python_file} \
         -batch_size ${batch_size} \
@@ -30,4 +31,5 @@ python -u ${python_file} \
         -gpu_no ${gpu_no}   \
         -repeat ${repeat}   \
 	-output ${output}   \
-        -criterion  ${criterion}
+        -criterion  ${criterion}  \
+        ${binary_threshold}

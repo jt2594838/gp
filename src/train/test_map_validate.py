@@ -36,6 +36,7 @@ parser.add_argument('-apply_method', type=str, default='')
 parser.add_argument('-output', type=str, default="./output")
 parser.add_argument('-repeat', type=int, default=10)
 parser.add_argument('-criterion', type=str)
+parser.add_argument('-binary_threshold', type=bool, default=False)
 
 args = parser.parse_args()
 args.apply_method = apply_methods[args.apply_method]
@@ -75,7 +76,8 @@ def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
         for j in range(maps.size(0)):
             maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
                         torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
-        maps[maps > threshold] = 1
+        if args.binary_threshold:
+            maps[maps > threshold] = 1
         maps[maps <= threshold] = 0
         input = apply_method(input, maps)
 
@@ -115,7 +117,8 @@ def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
     all_recall = 0
     for i in range(1, args.classes):
         all_recall += confusion_matrix[i, i]
-    all_recall /= torch.sum(confusion_matrix[1:, :])
+    if torch.sum(confusion_matrix[1:, :]) > 0:
+        all_recall /= torch.sum(confusion_matrix[1:, :])
 
     precs = []
     recalls = []
@@ -148,7 +151,8 @@ def validate_auc(val_loader, model, apply_method=None, threshold=1.0):
         for j in range(maps.size(0)):
             maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
                     torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
-        # maps[maps > threshold] = 1
+        if args.binary_threshold:
+            maps[maps > threshold] = 1
         maps[maps <= threshold] = 0
         input = apply_method(input, maps)
 
@@ -169,10 +173,10 @@ def validate_auc(val_loader, model, apply_method=None, threshold=1.0):
         batch_time.update(time.time() - end)
         end = time.time()
 
-        if i % args.print_freq == 0:
+        if (i + 1) % args.print_freq == 0:
             print('Test: [{0}/{1}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'.format(
-                i, len(val_loader), batch_time=batch_time))
+                i + 1, len(val_loader), batch_time=batch_time))
 
     auc_roc = roc_auc_score(labels, scores)
     print(' * auc_roc {}'
