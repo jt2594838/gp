@@ -1,5 +1,7 @@
 import sys
 
+import sklearn
+
 sys.path.append('.')
 sys.path.append('..')
 
@@ -9,6 +11,7 @@ import time
 
 import torch
 import torch.nn as nn
+import numpy as np
 
 from process.apply import apply_methods
 from dataset.MapValDataset import MapValDataset
@@ -32,6 +35,7 @@ parser.add_argument('-threshold', type=str, default="0.9, 1.0")
 parser.add_argument('-apply_method', type=str, default='apply_loss4D')
 parser.add_argument('-output', type=str, default="./output")
 parser.add_argument('-repeat', type=int, default=10)
+parser.add_argument('-criterion', type=str)
 
 args = parser.parse_args()
 args.apply_method = apply_methods[args.apply_method]
@@ -74,7 +78,6 @@ def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
         maps[maps <= threshold] = 0
         input = apply_method(input, maps)
 
-        target = target.cuda(async=True)
         input_var = torch.autograd.Variable(input, volatile=True)
         target_var = torch.autograd.Variable(target, volatile=True)
         if args.use_cuda:
@@ -109,6 +112,57 @@ def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
     return top1.avg, losses.avg
 
 
+def validate_auc(val_loader, model, apply_method=None, threshold=1.0):
+    batch_time = AverageMeter()
+    labels = None
+    scores = None
+
+    # switch to evaluate mode
+    model.eval()
+
+    end = time.time()
+    for i, (input, target, maps) in enumerate(val_loader):
+        if labels is None:
+            labels = np.zeros(len(val_loader))
+            scores = np.zeros(len(val_loader))
+
+        for j in range(maps.size(0)):
+            maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
+                    torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
+        maps[maps > threshold] = 1
+        maps[maps <= threshold] = 0
+        input = apply_method(input, maps)
+
+        input_var = torch.autograd.Variable(input, volatile=True)
+        target_var = torch.autograd.Variable(target, volatile=True)
+        if args.use_cuda:
+            input_var = input_var.cuda()
+            target_var = target_var.cuda()
+
+        # compute output
+        output = model(input_var)
+        output = (output - torch.min(output)) / (torch.max(output) - torch.min(output))
+        output = output / torch.sum(output)
+
+        labels[i] = 0 if target == 0 else 1
+        scores[i] = 1.0 - output.data[0]
+
+        # measure elapsed time
+        batch_time.update(time.time() - end)
+        end = time.time()
+
+        if i % args.print_freq == 0:
+            print('Test: [{0}/{1}]\t'
+                  'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'.format(
+                i, len(val_loader), batch_time=batch_time))
+
+    auc_roc = sklearn.metrics.roc_auc_score(labels, scores)
+    print(' * auc_roc {}'
+          .format(auc_roc))
+
+    return auc_roc
+
+
 def accuracy(output, target, topk=(1,)):
     """Computes the precision@k for the specified values of k"""
     maxk = max(topk)
@@ -140,15 +194,23 @@ def main(threshold):
         map_dataset, batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=False)
 
-    # p1, p5 = validate(val_loader, model, criterion)
-    # print('Validate result without map: top1 {0}, top5 {1}, all {2}'.format(p1, p5, all))
-    p1, loss = validate(val_loader, model, criterion, args.apply_method, threshold)
-    print('Validate result with map: top1 {0}, threshold {1}'.format(p1, threshold))
-    file = open(args.output, 'a')
-    file.write('map {0} \t threshold {1} \t precision {2} \n'.format(args.map_dir, threshold, p1))
-    file.close()
-
-    return p1, loss
+    if args.criterion == 'prec':
+        p1, loss = validate(val_loader, model, criterion, args.apply_method, threshold)
+        print('Validate result with map: {0} {1}, threshold {2}'.format(args.criterion, p1, threshold))
+        file = open(args.output, 'a')
+        file.write('map {0} \t threshold {1} \t {2} {3} \n'.format(args.map_dir, threshold, args.criterion, p1))
+        file.close()
+        return p1, loss
+    elif args.criterion == 'auc_roc':
+        auc_roc = validate_auc(val_loader, model, args.apply_method, threshold)
+        print('Validate result with map: auc_roc {0}, threshold {1}'.format(p1, threshold))
+        file = open(args.output, 'a')
+        file.write('map {0} \t threshold {1} \t auc_roc {2} \n'.format(args.map_dir, threshold, p1))
+        file.close()
+        return auc_roc, 0.0
+    else:
+        print('Invalid criterion {}'.format(args.criterion))
+        exit(-1)
 
 
 if __name__ == '__main__':
@@ -169,5 +231,5 @@ if __name__ == '__main__':
 
     file = open(args.output, 'a')
     for i in range(len(args.threshold)):
-        file.write('threshold {}, prec avg {}, loss avg {} \n'.format(args.threshold[i], summary_prec[i], summary_loss[i]))
+        file.write('threshold {}, {} avg {}, loss avg {} \n'.format(args.threshold[i], args.criterion, summary_prec[i], summary_loss[i]))
     file.close()

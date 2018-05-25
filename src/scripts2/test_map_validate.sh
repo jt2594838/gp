@@ -14,6 +14,7 @@ apply_method="apply_loss4D"
 gpu_no="5"
 output="/home/jiangtian/code/gp/res_anzhen/val_rst/ConvDeconv_zero_rect_quality.rst"
 repeat=10
+criterion="auc_roc"
 
 python -u ${python_file} \
         -batch_size ${batch_size} \
@@ -28,4 +29,5 @@ python -u ${python_file} \
         -threshold ${threshold} \
         -apply_method ${apply_method} \
         -gpu_no ${gpu_no}   \
-        -repeat ${repeat}
+        -repeat ${repeat}   \
+        -criterion  ${criterion}
