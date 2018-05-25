@@ -112,7 +112,8 @@ def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
     all_prec = 0
     for i in range(args.classes):
         all_prec += confusion_matrix[i, i]
-    all_prec /= torch.sum(confusion_matrix)
+    if torch.sum(confusion_matrix) > 0:
+        all_prec /= torch.sum(confusion_matrix)
 
     all_recall = 0
     for i in range(1, args.classes):
