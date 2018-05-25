@@ -27,11 +27,12 @@ parser.add_argument('-pretrained', type=bool, default=False)
 parser.add_argument('-model', type=str, default='ResNet101')
 parser.add_argument('-model_path', type=str,
                     default='/home/jt/codes/bs/gp/res/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl')
+parser.add_argument('-weak_model_path', type=str)
 parser.add_argument('-use_cuda', type=bool, default=True)
 parser.add_argument('-gpu_no', type=str, default='0')
 parser.add_argument('-description', type=str, default='unpreprocessed_ResNet')
 parser.add_argument('-threshold', type=str, default="0.9, 1.0")
-parser.add_argument('-apply_method', type=str, default='apply_loss4D')
+parser.add_argument('-apply_method', type=str, default='')
 parser.add_argument('-output', type=str, default="./output")
 parser.add_argument('-repeat', type=int, default=10)
 parser.add_argument('-criterion', type=str)
@@ -109,12 +110,12 @@ def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
     all_prec = 0
     for i in range(args.classes):
         all_prec += confusion_matrix[i, i]
-        all_prec /= torch.sum(confusion_matrix)
+    all_prec /= torch.sum(confusion_matrix)
 
     all_recall = 0
     for i in range(1, args.classes):
         all_recall += confusion_matrix[i, i]
-        all_recall /= torch.sum(confusion_matrix[1:, :])
+    all_recall /= torch.sum(confusion_matrix[1:, :])
 
     precs = []
     recalls = []
@@ -202,7 +203,10 @@ def accuracy(output, target, topk=(1,), confusion_matrix=None):
 def main(threshold, map_dir):
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
 
-    model = torch.load(args.model_path)
+    if 'weak' in map_dir:
+        model = torch.load(args.weak_model_path)
+    else:
+        model = torch.load(args.model_path)
     criterion = nn.CrossEntropyLoss()
 
     if args.use_cuda:
@@ -214,14 +218,19 @@ def main(threshold, map_dir):
         map_dataset, batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=False)
 
+    if 'zero' in map_dir:
+        args.apply_method = apply_methods['apply_loss4D']
+    elif 'one' in map_dir:
+        args.apply_method = apply_methods['apply_gain4D']
+
     if args.criterion == 'prec':
         all_prec, all_recall, precs, recalls, loss = validate(val_loader, model, criterion, args.apply_method, threshold)
-        print('Validate result with map: {0} {1} {2} {3} {4} {5}, threshold {2}'.format(args.criterion, all_prec, all_recall, precs, recalls, loss, threshold))
+        print('Validate result with map: {0} {1} {2} {3} {4} {5}, threshold {6}'.format(args.criterion, all_prec, all_recall, precs, recalls, loss, threshold))
         file_path = args.output
         if args.use_dir:
             file_path = os.path.join(file_path, os.path.basename(map_dir))
         file = open(file_path, 'a')
-        file.write('map {0} \t threshold {1} \t all_prec {2} all_recall {3} precs {4} recalls {5} loss {6}\n'.format(
+        file.write('map {0} \n\t threshold {1} \t all_prec {2} all_recall {3} precs {4} recalls {5} loss {6}\n'.format(
             args.map_dir, threshold,  all_prec, all_recall, precs, recalls, loss))
         file.close()
     elif args.criterion == 'auc_roc':

@@ -5,7 +5,8 @@ dataset="anzhen"
 # pretrained="-pretrained 1"
 model="ResNet101"
 model_path="/home/jiangtian/code/gp/res_anzhen/original_model/ResNet101_anzhen_3_200_98.35051569987819.pkl"
-map_dir="/home/jiangtian/code/gp/res_anzhen/val_map/ConvDeconvV2_anzhen_one_sp100_quality_validate_l4370.h5"
+weak_model_path="/home/jiangtian/code/gp/res_anzhen/original_model/ResNet101_anzhen_3_10_82.68041237113403.pkl"
+map_dir="/home/jiangtian/code/gp/res_anzhen/val_map/Deeplab_anzhen_zero_sp50_quality_validate_l4370.h5"
 # preprocess="-preprocess 1"
 threshold="0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99,1.0"
 apply_method="apply_loss4D"
@@ -21,6 +22,7 @@ python -u ${python_file} \
         ${pretrained} \
         -model ${model} \
         -model_path ${model_path} \
+	-weak_model_path ${weak_model_path}  \
         -map_dir ${map_dir} \
         ${preprocess}   \
         -threshold ${threshold} \
