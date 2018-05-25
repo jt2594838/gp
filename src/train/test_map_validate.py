@@ -115,7 +115,8 @@ def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
     all_recall = 0
     for i in range(1, args.classes):
         all_recall += confusion_matrix[i, i]
-    all_recall /= torch.sum(confusion_matrix[1:, :])
+    if torch.sum(confusion_matrix[1:, :]) > 0:
+        all_recall /= torch.sum(confusion_matrix[1:, :])
 
     precs = []
     recalls = []
@@ -169,10 +170,10 @@ def validate_auc(val_loader, model, apply_method=None, threshold=1.0):
         batch_time.update(time.time() - end)
         end = time.time()
 
-        if i % args.print_freq == 0:
+        if (i + 1) % args.print_freq == 0:
             print('Test: [{0}/{1}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'.format(
-                i, len(val_loader), batch_time=batch_time))
+                i + 1, len(val_loader), batch_time=batch_time))
 
     auc_roc = roc_auc_score(labels, scores)
     print(' * auc_roc {}'
