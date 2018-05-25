@@ -216,7 +216,7 @@ def main(threshold, map_dir):
 
     if args.criterion == 'prec':
         all_prec, all_recall, precs, recalls, loss = validate(val_loader, model, criterion, args.apply_method, threshold)
-        print('Validate result with map: {0} {1} {2} {3} {4} {5}, threshold {2}'.format(args.criterion, all_prec, all_recall, precs, recalls, loss, threshold))
+        print('Validate result with map: {0} {1} {2} {3} {4} {5}, threshold {6}'.format(args.criterion, all_prec, all_recall, precs, recalls, loss, threshold))
         file_path = args.output
         if args.use_dir:
             file_path = os.path.join(file_path, os.path.basename(map_dir))
