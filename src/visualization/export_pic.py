@@ -52,7 +52,7 @@ def main(input):
         plt.imsave(pic_path, pic.numpy(), cmap='gray')
         if (i + 1) % 100 == 0:
             print('{} pics exported'.format(i + 1))
-    print('Pic export over.')
+    print('Pic export of {} over.'.format(input))
 
 
 if __name__ == '__main__':
