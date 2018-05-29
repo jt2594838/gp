@@ -14,7 +14,7 @@ gpu_no="2"
 output="/home/jiangtian/code/gp/res_anzhen/val_rst_recall2/"
 repeat=1
 criterion="prec"
-binary_threshold = "-binary_threshold 1"
+# binary_threshold="-binary_threshold 1"
 
 python -u ${python_file} \
         -batch_size ${batch_size} \

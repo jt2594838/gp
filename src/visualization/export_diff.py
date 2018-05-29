@@ -17,9 +17,9 @@ args = parser.parse_args()
 
 def main(input):
     input_file = h5.File(input)
-    args.output = os.path.join(args.output, os.path.basename(input))
-    if not os.path.exists(args.output):
-        os.mkdir(args.output)
+    output = os.path.join(args.output, os.path.basename(input))
+    if not os.path.exists(output):
+        os.mkdir(output)
 
     x0 = input_file['x0'][:]
     y0 = input_file['y0'][:]
@@ -33,12 +33,12 @@ def main(input):
     for i in range(x0.shape[0]):
         pic = x0[i]
         pic_name = '{}_{}_{}_{}.jpg'.format(int(id[i]), int(y0[i]), int(label[i]), loss0[i])
-        pic_path = os.path.join(args.output, pic_name)
+        pic_path = os.path.join(output, pic_name)
         plt.imsave(pic_path, pic.squeeze(), cmap='gray')
 
         pic = x1[i]
-        pic_name = '{}_{}_{}_{}_applied.jpg'.format(int(id[i]), int(y1[i]), int(label[i]), loss1[i])
-        pic_path = os.path.join(args.output, pic_name)
+        pic_name = '{}_{}_{}_{}_{}applied.jpg'.format(int(id[i]), int(y1[i]), int(label[i]), loss1[i], str(y0[i] == y1[i]))
+        pic_path = os.path.join(output, pic_name)
         plt.imsave(pic_path, pic.squeeze(), cmap='gray')
         if (i + 1) % 100 == 0:
             print('{} pics exported'.format(i + 1))

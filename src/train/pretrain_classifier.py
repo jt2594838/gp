@@ -125,7 +125,7 @@ def validate(val_loader, model, criterion):
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
-        prec1,  = accuracy(output.data, target, topk=(1, ), confusion_matrix=confusion_matrix)
+        prec1,  = accuracy(output.data, target_var.data, topk=(1, ), confusion_matrix=confusion_matrix)
         losses.update(loss.data[0], input.size(0))
         top1.update(prec1[0], input.size(0))
 

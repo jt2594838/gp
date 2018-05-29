@@ -7,15 +7,15 @@ dataset="anzhen"
 model_path="/home/jiangtian/code/gp/res_anzhen/original_model/ResNet101_anzhen_3_200_98.35051569987819.pkl"
 model_name="ResNet"
 apply_method="apply_loss4D"
-size=200
+size=100
 processor_name="zero"
-gen_method_name="rect_greed"
+gen_method_name="super_pixel_zero_rnd"
 output_dir="/home/jiangtian/code/gp/res_anzhen/train_map"
 offset=0
 length=4370
-# update_err="-update_err 1"
-gpu_no="0"
-description="rect_greed_quantity"
+update_err="-update_err 1"
+gpu_no="1"
+description="zero_rect6x6Rnd_quality"
 
 python -u ${python_file} \
         -batch_size ${batch_size} \

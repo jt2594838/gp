@@ -22,9 +22,9 @@ args = parser.parse_args()
 
 def main(input):
     input_file = h5.File(input)
-    args.output = os.path.join(args.output, os.path.basename(input))
-    if not os.path.exists(args.output):
-        os.mkdir(args.output)
+    output = os.path.join(args.output, os.path.basename(input))
+    if not os.path.exists(output):
+        os.mkdir(output)
 
     x = torch.from_numpy(input_file['x'][:])
     y = torch.from_numpy(input_file['y'][:]).long()
@@ -37,17 +37,17 @@ def main(input):
     for i in range(x.shape[0]):
         pic = x[i]
         pic_name = '{}_{}.jpg'.format(i, y[i])
-        pic_path = os.path.join(args.output, pic_name)
+        pic_path = os.path.join(output, pic_name)
         if args.use_map:
             map = maps[i]
             applied = apply_method(pic, map).squeeze()
             map_name = '{}_{}_map.jpg'.format(i, y[i])
-            map_path = os.path.join(args.output, map_name)
+            map_path = os.path.join(output, map_name)
             applied_name = '{}_{}_applied.jpg'.format(i, y[i])
-            applied_path = os.path.join(args.output,applied_name)
+            applied_path = os.path.join(output, applied_name)
             map = map.squeeze()
-            plt.imsave(map_path, map.numpy())
-            plt.imsave(applied_path, applied.numpy())
+            plt.imsave(map_path, map.numpy(), cmap='gray')
+            plt.imsave(applied_path, applied.numpy(), cmap='gray')
         pic = pic.squeeze()
         plt.imsave(pic_path, pic.numpy(), cmap='gray')
         if (i + 1) % 100 == 0:
