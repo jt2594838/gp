@@ -7,3 +7,5 @@
 src/nets/__pycache__/
 
 *.pyc
+
+src/train/data/train_data/cifar-10-python\.tar\.gz
