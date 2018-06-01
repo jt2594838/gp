@@ -33,8 +33,8 @@ def main():
         x = np.expand_dims(x, 1)
 
     depth = x.shape[1]
-    height = x.shape[1]
-    width = x.shape[2]
+    height = x.shape[2]
+    width = x.shape[3]
 
     train_id = []
     val_id = []
