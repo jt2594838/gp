@@ -29,7 +29,7 @@ def main():
     for i in range(tot_cnt):
         id_map[str(y[i, 0])].append(i)
 
-    if x.dim() < 4:
+    if len(x.shape) < 4:
         x = x.unsqueeze(1)
 
     depth = x.shape[1]
