@@ -15,7 +15,7 @@ args = parser.parse_args()
 
 
 def main():
-    file = h5.File(args.intput)
+    file = h5.File(args.input)
 
     x = file['x'][:]
     y = file['y'][:].astype(int)
