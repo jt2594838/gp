@@ -33,7 +33,7 @@ class H5Dataset(data.Dataset):
         data = self.data[index, :, :]
         if self.use_transform:
             data = self.transform(data)
-        return data, self.label[index, 0]
+        return data, self.label[index]
 
     def __len__(self):
         return self.data_size
