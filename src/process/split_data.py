@@ -26,7 +26,7 @@ def main():
 
     tot_cnt = y.shape[0]
 
-    for i in tot_cnt:
+    for i in range(tot_cnt):
         id_map[str(y[i])].append(i)
 
     depth = x.shape[1]
