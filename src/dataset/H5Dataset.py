@@ -7,15 +7,12 @@ import numpy as np
 
 
 class H5Dataset(data.Dataset):
-    def __init__(self, root, train=True, sample_rate=0.9, use_transform=True):
+    def __init__(self, root, train=True, sample_rate=1.0, use_transform=True):
         self.use_transform = use_transform
         self.root = os.path.expanduser(root)
         file = h5.File(root)
         data_size = file['x'].shape[0]
-        if train:
-            choices = np.random.choice(data_size, int(sample_rate * data_size), replace=False)
-        else:
-            choices = np.random.choice(data_size, int((1 - sample_rate) * data_size), replace=False)
+        choices = np.random.choice(data_size, int(sample_rate * data_size), replace=False)
         choices.sort()
         self.data = torch.from_numpy(file['x'][list(choices)]).float()
         if self.data.dim() < 4:
