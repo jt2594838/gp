@@ -44,8 +44,8 @@ def main():
         id_list = id_map[str(i)]
         class_cnt = len(id_list)
 
-        train_cnt = class_cnt * args.train_rate
-        val_cnt = class_cnt * args.val_rate
+        train_cnt = int(class_cnt * args.train_rate)
+        val_cnt = int(class_cnt * args.val_rate)
 
         for j in range(0, train_cnt):
             train_id.append(id_list[j])
