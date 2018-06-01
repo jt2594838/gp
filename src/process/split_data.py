@@ -87,3 +87,6 @@ def main():
     test_file.create_dataset('y', data=test_y)
     test_file.close()
 
+
+if __name__ == '__main__':
+    main()
