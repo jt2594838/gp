@@ -30,7 +30,7 @@ def main():
         id_map[str(y[i, 0])].append(i)
 
     if len(x.shape) < 4:
-        x = x.unsqueeze(1)
+        x = np.expand_dims(x, 1)
 
     depth = x.shape[1]
     height = x.shape[1]
