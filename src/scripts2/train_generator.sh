@@ -5,13 +5,13 @@ classes=3
 dataset="anzhen"
 in_channels=1
 # pretrained="-pretrained 1"
-model="Deeplab"
-model_path="/home/jiangtian/code/gp/res_anzhen/generator_model_pre"
-train_dir="/home/jiangtian/code/gp/res_anzhen/train_map/ResNet_anzhen_0_4370_zero_super_pixel_zero_super_pixel_greed_quality.h5"
-val_dir="/home/jiangtian/code/gp/res_anzhen/train_map/ResNet_anzhen_0_4370_zero_super_pixel_zero_super_pixel_greed_quality.h5"
-description="zero_sp100_quality"
+model="ConvDeconvV2"
+model_path="/home/jiangtian/code/gp/res_anzhen2/generator_model"
+train_dir="/home/jiangtian/code/gp/res_anzhen2/train_map_strong/ResNet_anzhen_0_485_zero_super_pixel_zero_zero_sp100_quality.h5"
+val_dir="/home/jiangtian/code/gp/res_anzhen2/train_map_strong/ResNet_anzhen_0_485_zero_super_pixel_zero_zero_sp100_quality.h5"
+description="zeroo_sp100_quality"
 preprocess="-preprocess 1"
-gpu_no="0"
+gpu_no="5"
 learn_rate=0.005
 
 python -u ${python_file} \

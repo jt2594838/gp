@@ -12,7 +12,7 @@ class H5Dataset(data.Dataset):
         self.root = os.path.expanduser(root)
         file = h5.File(root)
         data_size = file['x'].shape[0]
-        choices = np.random.choice(data_size, int(sample_rate * data_size), replace=False)
+        choices = np.random.choice(data_size, data_size, replace=False)
         choices.sort()
         self.data = torch.from_numpy(file['x'][list(choices)]).float()
         if self.data.dim() < 4:

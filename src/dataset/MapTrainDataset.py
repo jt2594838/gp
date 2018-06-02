@@ -13,8 +13,8 @@ class MapTrainDataset(data.Dataset):
         y = file['map']
         data_size = x.shape[0]
         if train:
-            self.data = np.array(x[:int(0.9 * data_size), :, :, :])
-            self.target = np.array(y[:int(0.9 * data_size), :, :])
+            self.data = np.array(x[:int(1.0 * data_size), :, :, :])
+            self.target = np.array(y[:int(1.0 * data_size), :, :])
             self.data_size = self.data.shape[0]
         else:
             self.data = np.array(x[int(0.9 * data_size):, :, :, :])

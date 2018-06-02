@@ -5,7 +5,7 @@ normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 
 
-def get_dataset_100(dir, train=True):
+def get_dataset_100(dir, train=True, sample_rate=1.0):
     dataset = datasets.CIFAR100(
         root=dir,
         train=train,
@@ -19,7 +19,7 @@ def get_dataset_100(dir, train=True):
     return dataset
 
 
-def get_dataset_10(dir, train=True):
+def get_dataset_10(dir, train=True, sample_rate=1.0):
     dataset = datasets.CIFAR10(
         root=dir,
         train=train,

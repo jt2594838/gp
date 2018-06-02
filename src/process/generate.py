@@ -139,7 +139,7 @@ def gen_sensitive_map_rect_greed_rnd(model, pic, label, size, criterion, window_
 
 def gen_map_superpixel_zero(model, pic, label, size, criterion, window_processor, update_err=False, use_cuda=True):
     n_segments = size[0]
-    superpixels = slic(pic.squeeze(), n_segments=n_segments, compactness=10)
+    superpixels = slic(pic.squeeze(), n_segments=n_segments, compactness=0.03)
     height = pic.size()[2]
     width = pic.size()[3]
     map = torch.zeros((1, height, width))
@@ -178,7 +178,7 @@ def gen_map_superpixel_zero(model, pic, label, size, criterion, window_processor
 
 def gen_map_superpixel_zero_rnd(model, pic, label, size, criterion, window_processor, update_err=False, use_cuda=True):
     n_segments = size[0]
-    superpixels = slic(pic.squeeze(), n_segments=n_segments, compactness=10)
+    superpixels = slic(pic.squeeze(), n_segments=n_segments, compactness=0.03)
     height = pic.size()[2]
     width = pic.size()[3]
     map = torch.zeros((1, height, width))
@@ -225,7 +225,7 @@ def gen_map_superpixel_zero_rnd(model, pic, label, size, criterion, window_proce
 
 def gen_map_superpixel_one(model, pic, label, size, criterion, window_processor, update_err=False, use_cuda=True):
     n_segments = size[0]
-    superpixels = slic(pic.squeeze(), n_segments=n_segments, compactness=10)
+    superpixels = slic(pic.squeeze(), n_segments=n_segments, compactness=0.03)
     height = pic.size()[2]
     width = pic.size()[3]
     map = torch.zeros((1, height, width))
