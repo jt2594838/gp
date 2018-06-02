@@ -10,6 +10,7 @@ import h5py as h5
 import matplotlib.pylab as plt
 import os
 from process.apply import apply_methods
+import numpy as np
 
 parser = argparse.ArgumentParser(description='Train a basic classifier')
 parser.add_argument('-input', type=str)
@@ -40,6 +41,9 @@ def main(input):
         pic_path = os.path.join(output, pic_name)
         if args.use_map:
             map = maps[i]
+            for j in range(maps.shape[0]):
+                maps[j, :, :] = (maps[j, :, :] - np.min(maps[j, :, :])) / (
+                        np.max(maps[j, :, :]) - np.min(maps[j, :, :]))
             applied = apply_method(pic, map).squeeze()
             map_name = '{}_{}_map.jpg'.format(i, y[i])
             map_path = os.path.join(output, map_name)
