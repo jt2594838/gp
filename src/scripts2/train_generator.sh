@@ -6,12 +6,12 @@ dataset="anzhen"
 in_channels=1
 # pretrained="-pretrained 1"
 model="ConvDeconvV2"
-model_path="/home/jiangtian/code/gp/res_anzhen2/generator_model"
-train_dir="/home/jiangtian/code/gp/res_anzhen2/train_map_strong/ResNet_anzhen_0_485_zero_super_pixel_zero_zero_sp100_quality.h5"
-val_dir="/home/jiangtian/code/gp/res_anzhen2/train_map_strong/ResNet_anzhen_0_485_zero_super_pixel_zero_zero_sp100_quality.h5"
-description="zeroo_sp100_quality"
+model_path="/home/jiangtian/code/gp/res_anzhen2/generator_model2"
+train_dir="/home/jiangtian/code/gp/res_anzhen2/train_map2/ResNet_anzhen_0_485_zero_rect_rnd_zero_rect21_quantity.h5"
+val_dir="/home/jiangtian/code/gp/res_anzhen2/train_map2/ResNet_anzhen_0_485_zero_rect_rnd_zero_rect21_quantity.h5"
+description="zero_rect21_quantity"
 preprocess="-preprocess 1"
-gpu_no="5"
+gpu_no="2"
 learn_rate=0.005
 
 python -u ${python_file} \

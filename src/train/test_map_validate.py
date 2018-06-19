@@ -157,9 +157,9 @@ def validate_auc(val_loader, model, apply_method=None, threshold=1.0):
             labels = np.zeros(len(val_loader))
             scores = np.zeros(len(val_loader))
 
-        for j in range(maps.size(0)):
-            maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
-                    torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
+        # for j in range(maps.size(0)):
+        #    maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
+        #           torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
         if args.binary_threshold:
             maps[maps > threshold] = 1
         maps[maps <= threshold] = 0
