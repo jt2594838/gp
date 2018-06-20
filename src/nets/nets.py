@@ -5,6 +5,12 @@ from nets import Resnet, VGG
 import torch.nn as nn
 
 
+"""
+This file provides a factory that makes different classifiers. If you want to use other classifiers like SqueezeNet, you
+may add them here.
+"""
+
+
 def get_ResNet50(num_classes, pretrained=True, in_channels=3, classify=True):
     model = Resnet.resnet50(pretrained, in_channels, classify=classify)
     classifier_in_features = model.fc.in_features
@@ -26,6 +32,7 @@ def get_VGG16(num_classes, pretrained=True, in_channels=3, classify=True):
     return model
 
 
+# You are encouraged to use other classifiers.
 def build_classifier(input_features, output_features):
     classifier = nn.Sequential(
         nn.Linear(input_features, 4096),
@@ -39,12 +46,12 @@ def build_classifier(input_features, output_features):
     return classifier
 
 
-net_factory = {
+classify_net_factory = {
     "VGG16": get_VGG16,
     "ResNet50": get_ResNet50,
     "ResNet101": get_ResNet101,
 }
 
 if __name__ == '__main__':
-    model = net_factory['ResNet'](10)
+    model = classify_net_factory['ResNet'](10)
     print(model)

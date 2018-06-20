@@ -3,12 +3,12 @@ batch_size=50
 epoch=200
 classes=3
 train_dir="/home/jiangtian/code/gp/res_anzhen/gened_train_map/Deeplab_anzhen_zero_superpixel_quantity_100_validate_l4370.h5.applied"
-dataset="anzhen"
+dataset="H5"
 in_channels=1
 # pretrained="-pretrained 1"
-model="ResNet101"
+model_name="ResNet101"
 model_path="/home/jiangtian/code/gp/res_anzhen/model"
-val_map_dir="/home/jiangtian/code/gp/res_anzhen/val_map/Deeplab_anzhen_zero_super_pixel_quantity_100_validate_l4370.h5"
+val_dir="/home/jiangtian/code/gp/res_anzhen/val_map/Deeplab_anzhen_zero_super_pixel_quantity_100_validate_l4370.h5"
 description="l5000"
 # preprocess="-preprocess 1"
 threshold=0.5
@@ -26,7 +26,7 @@ python -u ${python_file} \
         ${pretrained} \
         -model ${model} \
         -model_path ${model_path} \
-        -val_map_dir ${val_map_dir} \
+        -val_dir ${val_dir} \
         -description ${description} \
         $(preprocess)   \
         -threshold ${threshold} \

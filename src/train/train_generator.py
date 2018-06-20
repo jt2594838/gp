@@ -4,8 +4,7 @@ sys.path.append('.')
 sys.path.append('..')
 
 from nets.ConvDeconvV2 import ConvDeconvV2
-from nets.ConvDeconv import ConvDeconv
-from nets.deeplab import Deeplab
+from nets.Deeplab import Deeplab
 from dataset.MapTrainDataset import MapTrainDataset
 
 import os
@@ -16,22 +15,22 @@ import torch.nn as nn
 import argparse
 
 
-parser = argparse.ArgumentParser(description='Train a basic classifier')
+parser = argparse.ArgumentParser(description='Train a generator to generate process maps')
 parser.add_argument('-batch_size', type=int, default=50)
 parser.add_argument('-workers', type=int, default=1)
 parser.add_argument('-lr', type=float, default=0.01)
 parser.add_argument('-weight_decay', type=float, default=1e-4)
+parser.add_argument('-momentum', type=float, default=0.9)
 parser.add_argument('-epoch', type=int, default=200)
 parser.add_argument('-print_freq', type=int, default=1)
 parser.add_argument('-classes', type=int, default=3)
-parser.add_argument('-train_dir', type=str, default="/home/jt/codes/bs/gp/res_anzhen/train_map/ResNet_anzhen_0_4300_zero_greed_rect_quantity.h5")
-parser.add_argument('-val_dir', type=str, default="/home/jt/codes/bs/gp/res_anzhen/train_map/ResNet_anzhen_0_4300_zero_greed_rect_quantity.h5")
-parser.add_argument('-dataset', type=str, default='anzhen_4300_zero')
+parser.add_argument('-train_dir', type=str)
+parser.add_argument('-val_dir', type=str)
+parser.add_argument('-dataset', type=str)
 parser.add_argument('-in_channels', type=int, default=1)
 parser.add_argument('-pretrained', type=bool, default=False)
-parser.add_argument('-model', type=str, default='ConvDeconv')
-parser.add_argument('-momentum', type=float, default=0.9)
-parser.add_argument('-model_path', type=str, default='/home/jt/codes/bs/gp/res_anzhen/model')
+parser.add_argument('-model_name', type=str)
+parser.add_argument('-model_path', type=str)
 parser.add_argument('-use_cuda', type=bool, default=True)
 parser.add_argument('-gpu_no', type=str, default='0')
 parser.add_argument('-description', type=str, default='unpreprocessed_ResNet')
@@ -148,17 +147,18 @@ def main():
     if not os.path.exists(args.train_dir):
         os.makedirs(args.train_dir)
 
-    if args.model == 'Deeplab':
+    print('Building generator {}'.format(args.model_name))
+    model = None
+    if args.model_name == 'Deeplab':
         model = Deeplab(1, args.in_channels, args.pretrained)
-    elif args.model == 'ConvDeconv':
-        model = ConvDeconv(args.in_channels)
-    elif args.model == 'ConvDeconvV2':
+    elif args.model_name == 'ConvDeconvV2':
         model = ConvDeconvV2(args.in_channels)
     else:
         print('Illegal model name {0}'.format(args.model))
         exit(-1)
 
-    train_dataset = MapTrainDataset(args.train_dir, True, args.preprocess)
+    print('loading training data from {}'.format(args.train_dir))
+    train_dataset = MapTrainDataset(args.train_dir, train=True, preprocess=args.preprocess)
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=False)
@@ -172,12 +172,12 @@ def main():
     optimizer = torch.optim.SGD(model.parameters(), args.lr,
                                 momentum=args.momentum,
                                 weight_decay=args.weight_decay)
-    # optimizer = torch.optim.Adam(model.parameters(), args.lr)
 
     for i in range(args.epoch):
         train(train_loader, model, criterion, optimizer, i)
 
-    val_dataset = MapTrainDataset(args.val_dir, False, args.preprocess)
+    print('loading validating data from {}'.format(args.val_dir))
+    val_dataset = MapTrainDataset(args.val_dir, train=False, preprocess=args.preprocess)
     val_loader = torch.utils.data.DataLoader(
         val_dataset, batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=False)

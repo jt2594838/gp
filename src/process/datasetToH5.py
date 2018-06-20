@@ -9,7 +9,12 @@ import numpy as np
 from dataset.factory import dataset_factory
 
 
-parser = argparse.ArgumentParser(description='Train a basic classifier')
+"""
+Transform a dataset to HDF5 format with 'x' as input and 'y' as targets.
+The inputs must be a 4d array and the targets must be an 1d array.
+"""
+
+parser = argparse.ArgumentParser(description='Transform a dataset to HDF5 format with \'x\' as input and \'y\' as targets')
 parser.add_argument('-input', type=str)
 parser.add_argument('-dataset', type=str)
 parser.add_argument('-train', type=bool, default=False)
@@ -19,7 +24,7 @@ args = parser.parse_args()
 
 
 def main():
-    dataset = dataset_factory[args.dataset](args.input, args.train)
+    dataset = dataset_factory[args.dataset](args.input, train=args.train)
     x = None
     y = None
     for i, (input, target) in enumerate(dataset):

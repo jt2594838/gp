@@ -1,6 +1,6 @@
 python_file='train/test_map_diff.py'
 classes=3
-dataset="anzhen"
+dataset="H5"
 # pretrained="-pretrained 1"
 model="ResNet101"
 model_path="/home/jiangtian/code/gp/res_anzhen2/original_model/ResNet101_anzhen_3_200_81.19265792566702.pkl"

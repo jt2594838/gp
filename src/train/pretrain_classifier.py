@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import argparse
 
-from nets.nets import net_factory
+from nets.nets import classify_net_factory
 from dataset.factory import dataset_factory
 
 parser = argparse.ArgumentParser(description='Train a basic classifier')
@@ -18,16 +18,16 @@ parser.add_argument('-workers', type=int, default=1)
 parser.add_argument('-lr', type=float, default=0.01)
 parser.add_argument('-weight_decay', type=float, default=1e-4)
 parser.add_argument('-epoch', type=int, default=200)
+parser.add_argument('-momentum', type=float, default=0.9)
 parser.add_argument('-print_freq', type=int, default=1)
 parser.add_argument('-classes', type=int, default=3)
-parser.add_argument('-train_dir', type=str, default="/home/jt/codes/bs/gp/data/anzhen/merged2")
-parser.add_argument('-val_dir', type=str, default="/home/jt/codes/bs/gp/data/anzhen/merged2")
-parser.add_argument('-dataset', type=str, default='anzhen')
+parser.add_argument('-train_dir', type=str)
+parser.add_argument('-val_dir', type=str)
+parser.add_argument('-dataset', type=str)
 parser.add_argument('-in_channels', type=int, default=1)
 parser.add_argument('-pretrained', type=bool, default=False)
-parser.add_argument('-model', type=str, default='ResNet101')
-parser.add_argument('-momentum', type=float, default=0.9)
-parser.add_argument('-model_path', type=str, default='/home/jt/codes/bs/gp/res_anzhen/model')
+parser.add_argument('-model_name', type=str)
+parser.add_argument('-model_path', type=str)
 parser.add_argument('-use_cuda', type=bool, default=True)
 parser.add_argument('-gpu_no', type=str, default='0')
 
@@ -172,16 +172,17 @@ def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
     if not os.path.exists(args.train_dir):
         os.makedirs(args.train_dir)
-    print("pretrained ?? {}", args.pretrained)
 
-    model = net_factory[args.model](args.classes, args.pretrained, args.in_channels, classify=True)
-    train_dataset = dataset_factory[args.dataset](args.train_dir, True)
+    print('Loading model {}'.format(args.model_name))
+    model = classify_net_factory[args.model_name](num_classes=args.classes, pretrained=args.pretrained,
+                                                  inchannels=args.in_channels, classify=True)
+    print('Loading train dataset {} from {}'.format(args.dataset, args.train_dir))
+    train_dataset = dataset_factory[args.dataset](args.train_dir, train=True)
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=False)
 
     criterion = nn.CrossEntropyLoss()
-
     optimizer = torch.optim.SGD(model.parameters(), args.lr,
                                 momentum=args.momentum,
                                 weight_decay=args.weight_decay)
@@ -192,14 +193,15 @@ def main():
     for i in range(args.epoch):
         train(train_loader, model, criterion, optimizer, i)
 
-    val_dataset = dataset_factory[args.dataset](args.val_dir, False)
+    print('Loading validate dataset {} from {}'.format(args.dataset, args.val_dir))
+    val_dataset = dataset_factory[args.dataset](args.val_dir, train=False)
     val_loader = torch.utils.data.DataLoader(
         val_dataset, batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=False)
 
     p1 = validate(val_loader, model, criterion)
 
-    filename = '{0}_{1}_{2}_{3}_{4}.pkl'.format(args.model, args.dataset, str(args.classes), str(args.epoch),
+    filename = '{0}_{1}_{2}_{3}_{4}.pkl'.format(args.model_name, args.dataset, str(args.classes), str(args.epoch),
                                                     str(p1))
     path = os.path.join(args.model_path, filename)
     if not os.path.exists(args.model_path):

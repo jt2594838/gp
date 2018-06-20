@@ -2,7 +2,7 @@ python_file='train/train_generator.py'
 batch_size=20
 epoch=500
 classes=3
-dataset="anzhen"
+dataset="H5"
 in_channels=1
 # pretrained="-pretrained 1"
 model="ConvDeconvV2"
@@ -27,5 +27,5 @@ python -u ${python_file} \
         -val_dir ${val_dir} \
         -description ${description} \
         ${preprocess}   \
-	-lr ${learn_rate}  \
+	    -lr ${learn_rate}  \
         -gpu_no ${gpu_no}

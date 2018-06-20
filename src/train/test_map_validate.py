@@ -15,28 +15,23 @@ from process.apply import apply_methods
 from dataset.MapValDataset import MapValDataset
 from sklearn.metrics import roc_auc_score
 
-parser = argparse.ArgumentParser(description='Train a basic classifier')
+parser = argparse.ArgumentParser(description='Use the test dataset processed by process map to test the classifier.')
 parser.add_argument('-batch_size', type=int, default=50)
 parser.add_argument('-workers', type=int, default=1)
 parser.add_argument('-print_freq', type=int, default=100)
 parser.add_argument('-classes', type=int, default=3)
-parser.add_argument('-map_dir', type=str,
-                    default="/home/jt/codes/bs/gp/res/maps/Deeplab_CIFAR_10_unpreprocessed_VGG16_validate.h5")
-parser.add_argument('-dataset', type=str, default='CIFAR_10')
+parser.add_argument('-map_dir', type=str)
+parser.add_argument('-dataset', type=str)
 parser.add_argument('-pretrained', type=bool, default=False)
 parser.add_argument('-model', type=str, default='ResNet101')
-parser.add_argument('-model_path', type=str,
-                    default='/home/jt/codes/bs/gp/res/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl')
+parser.add_argument('-model_path', type=str)
 parser.add_argument('-weak_model_path', type=str)
 parser.add_argument('-use_cuda', type=bool, default=True)
 parser.add_argument('-gpu_no', type=str, default='0')
 parser.add_argument('-description', type=str, default='unpreprocessed_ResNet')
 parser.add_argument('-threshold', type=str, default="0.9, 1.0")
 parser.add_argument('-apply_method', type=str, default='')
-parser.add_argument('-output', type=str, default="./output")
-parser.add_argument('-repeat', type=int, default=10)
-parser.add_argument('-criterion', type=str)
-parser.add_argument('-binary_threshold', type=bool, default=False)
+parser.add_argument('-output', type=str)
 
 args = parser.parse_args()
 args.apply_method = apply_methods[args.apply_method]
@@ -76,8 +71,7 @@ def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
         for j in range(maps.size(0)):
             maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
                         torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
-        if args.binary_threshold:
-            maps[maps > threshold] = 1
+        maps[maps > threshold] = 1
         maps[maps <= threshold] = 0
         input = apply_method(input, maps)
 
@@ -157,11 +151,10 @@ def validate_auc(val_loader, model, apply_method=None, threshold=1.0):
             labels = np.zeros(len(val_loader))
             scores = np.zeros(len(val_loader))
 
-        # for j in range(maps.size(0)):
-        #    maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
-        #           torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
-        if args.binary_threshold:
-            maps[maps > threshold] = 1
+        for j in range(maps.size(0)):
+           maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
+                  torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
+        maps[maps > threshold] = 1
         maps[maps <= threshold] = 0
         input = apply_method(input, maps)
 
@@ -217,8 +210,10 @@ def main(threshold, map_dir):
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_no
 
     if 'weak' in map_dir:
+        print('loading model from {}'.format(args.weak_model_path))
         model = torch.load(args.weak_model_path)
     else:
+        print('loading model from {}'.format(args.model_path))
         model = torch.load(args.model_path)
     criterion = nn.CrossEntropyLoss()
 
@@ -226,38 +221,26 @@ def main(threshold, map_dir):
         model = model.cuda()
         criterion = criterion.cuda()
 
+    print('loading data from {}'.format(map_dir))
     map_dataset = MapValDataset(map_dir)
     val_loader = torch.utils.data.DataLoader(
         map_dataset, batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=False)
 
     if 'zero' in map_dir:
-        args.apply_method = apply_methods['apply_loss4D']
+        args.apply_method = apply_methods['apply_zero4D']
     elif 'one' in map_dir:
-        args.apply_method = apply_methods['apply_gain4D']
+        args.apply_method = apply_methods['apply_one4D']
 
-    if args.criterion == 'prec':
-        all_prec, all_recall, precs, recalls, loss = validate(val_loader, model, criterion, args.apply_method, threshold)
-        print('Validate result with map: {0} {1} {2} {3} {4} {5}, threshold {6}'.format(args.criterion, all_prec, all_recall, precs, recalls, loss, threshold))
-        file_path = args.output
-        if args.use_dir:
-            file_path = os.path.join(file_path, os.path.basename(map_dir))
-        file = open(file_path, 'a')
-        file.write('map {0} \n\t threshold {1} \t all_prec {2} all_recall {3} precs {4} recalls {5} loss {6}\n'.format(
-            args.map_dir, threshold,  all_prec, all_recall, precs, recalls, loss))
-        file.close()
-    elif args.criterion == 'auc_roc':
-        auc_roc = validate_auc(val_loader, model, args.apply_method, threshold)
-        print('Validate result with map: auc_roc {0}, threshold {1}'.format(auc_roc, threshold))
-        file_path = args.output
-        if args.use_dir:
-            file_path = os.path.join(file_path, os.path.basename(map_dir))
-        file = open(file_path, 'a')
-        file.write('map {0} \t threshold {1} \t auc_roc {2} \n'.format(args.map_dir, threshold, auc_roc))
-        file.close()
-    else:
-        print('Invalid criterion {}'.format(args.criterion))
-        exit(-1)
+    all_prec, all_recall, precs, recalls, loss = validate(val_loader, model, criterion, args.apply_method, threshold)
+    print('Validate result with map: {0} {1} {2} {3} {4} {5}, threshold {6}'.format(args.criterion, all_prec, all_recall, precs, recalls, loss, threshold))
+    file_path = args.output
+    if args.use_dir:
+        file_path = os.path.join(file_path, os.path.basename(map_dir))
+    file = open(file_path, 'a')
+    file.write('map {0} \n\t threshold {1} \t all_prec {2} all_recall {3} precs {4} recalls {5} loss {6}\n'.format(
+        args.map_dir, threshold,  all_prec, all_recall, precs, recalls, loss))
+    file.close()
 
 
 if __name__ == '__main__':

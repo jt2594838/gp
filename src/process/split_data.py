@@ -3,11 +3,16 @@ import argparse
 import h5py as h5
 import numpy as np
 
-parser = argparse.ArgumentParser(description='Train a basic classifier')
+"""
+Split an HDF5 dataset into 3 parts: train set, validation set and test set.
+The size of train set and validation set will be determined by train_rate and val_rate parameters, and the rest will be
+the test set.
+"""
+
+parser = argparse.ArgumentParser(description='Split an HDF5 dataset into 3 parts: train, validation and test.')
 parser.add_argument('-input', type=str)
 parser.add_argument('-train_rate', type=float)
 parser.add_argument('-val_rate', type=float)
-parser.add_argument('-test_rate', type=float)
 parser.add_argument('-output', type=str)
 parser.add_argument('-classes', type=int)
 
@@ -20,6 +25,13 @@ def main():
     x = file['x'][:]
     y = file['y'][:].astype(int)
 
+    if len(x.shape) == 3:
+        x = np.expand_dims(x, 1)
+    elif len(x.shape) != 4:
+        print('Incorrect dimension of X : {}, which must be 3 or 4'.format(len(x.shape)))
+        exit(-1)
+
+    # extract ids of different classes
     id_map = {}
     for i in range(args.classes):
         id_map[str(i)] = []
@@ -29,9 +41,7 @@ def main():
     for i in range(tot_cnt):
         id_map[str(y[i, 0])].append(i)
 
-    if len(x.shape) < 4:
-        x = np.expand_dims(x, 1)
-
+    # split the samples in each class according to the rates
     depth = x.shape[1]
     height = x.shape[2]
     width = x.shape[3]
@@ -54,8 +64,9 @@ def main():
         for j in range(train_cnt + val_cnt, class_cnt):
             test_id.append(id_list[j])
 
-    print('{} train {} val {} test'.format(len(train_id), len(val_id), len(test_id)))
+    print('{} train samples {} val samples {} test samples'.format(len(train_id), len(val_id), len(test_id)))
 
+    # concat the samples
     train_x = np.zeros((len(train_id), depth, height, width))
     val_x = np.zeros((len(val_id), depth, height, width))
     test_x = np.zeros((len(test_id), depth, height, width))
@@ -75,6 +86,7 @@ def main():
         test_x[i, :, :, :] = x[test_id[i], :, :, :]
         test_y[i] = y[test_id[i]]
 
+    # write out in separate files
     train_file = h5.File(args.output + '.train')
     train_file.create_dataset('x', data=train_x)
     train_file.create_dataset('y', data=train_y)

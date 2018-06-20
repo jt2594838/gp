@@ -5,39 +5,52 @@ import h5py as h5
 from torchvision.transforms import transforms
 import numpy as np
 
+"""
+This dataset uses HDF5 file as its data source to provide inputs and target for a classifier.
+The HDF5 file must contain 2 attributes:
+    'x' : the input data, must be a 3d or 4d array and each dimension means [number, (depth), height, width] respectively
+    'y' : the label of the data, must be a 1d array. y[i] is the label of x[i, :].
+Data and label are stored as PyTorch tensors.
+"""
+
 
 class H5Dataset(data.Dataset):
-    def __init__(self, root, train=True, sample_rate=1.0, use_transform=True):
-        self.use_transform = use_transform
-        self.root = os.path.expanduser(root)
+    def __init__(self, root, num_classes=3, **kwargs):
         file = h5.File(root)
         data_size = file['x'].shape[0]
-        choices = np.random.choice(data_size, data_size, replace=False)
-        choices.sort()
-        self.data = torch.from_numpy(file['x'][list(choices)]).float()
-        if self.data.dim() < 4:
-            self.data = self.data.unsqueeze(1)
-        self.label = torch.from_numpy(file['y'][list(choices)]).long()
-        self.data_size = len(choices)
+        label_size = file['y'].shape[0]
 
-        self.transform = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.Resize(224),
-            transforms.ToTensor(),
-        ])
-        print('Distribution: {0}, {1}, {2}'.format(self.label[self.label == 0].size(0),
-                                                   self.label[self.label == 1].size(0),
-                                                   self.label[self.label == 2].size(0),))
+        if data_size != label_size:
+            print('Inconsistent data size ({}) and label size ({}), please check your input file.'.format(data_size, label_size))
+            exit(-1)
+        print('File contains {0} samples'.format(self.data_size))
+
+        self.data = torch.from_numpy(file['x'][:]).float()
+        if self.data.dim() == 3:
+            self.data = self.data.unsqueeze(1)
+        elif self.data.dim() != 4:
+            print('Invalid data dimension {}, which must be 3 or 4!'.format(self.data.dim()))
+            exit(-1)
+        self.label = torch.from_numpy(file['y'][:]).long()
+        if self.label.dim() != 1:
+            print('Labels must an 1d array, but got a {}d array'.format(self.label.dim()))
+            exit(-1)
+        self.data_size = data_size
+
+        self.num_classes = num_classes
+        distribution = []
+        for i in range(self.num_classes):
+            distribution.append(self.label[self.label == i].size(0))
+        print('Sample Distribution: {0}'.format(distribution))
+        file.close()
 
     def __getitem__(self, index):
-        data = self.data[index, :, :]
-        if self.use_transform:
-            data = self.transform(data)
+        data = self.data[index, :]
         return data, self.label[index]
 
     def __len__(self):
         return self.data_size
 
 
-def get_anzhen_dataset(root, train, sample_rate=0.9):
-    return H5Dataset(root, train, sample_rate=sample_rate)
+def get_anzhen_dataset(root, **kwargs):
+    return H5Dataset(root, **kwargs)

@@ -15,23 +15,20 @@ from process.apply import apply_methods
 from dataset.MapValDataset import MapValDataset
 import numpy as np
 
-parser = argparse.ArgumentParser(description='Train a basic classifier')
-parser.add_argument('-workers', type=int, default=1)
+parser = argparse.ArgumentParser(description='Figure out the samples whose classification error decrease after being processed')
 parser.add_argument('-print_freq', type=int, default=100)
 parser.add_argument('-classes', type=int, default=3)
-parser.add_argument('-map_dir', type=str,
-                    default="/home/jt/codes/bs/gp/res/maps/Deeplab_CIFAR_10_unpreprocessed_VGG16_validate.h5")
-parser.add_argument('-dataset', type=str, default='CIFAR_10')
+parser.add_argument('-map_dir', type=str)
+parser.add_argument('-dataset', type=str)
 parser.add_argument('-pretrained', type=bool, default=False)
-parser.add_argument('-model', type=str, default='ResNet101')
-parser.add_argument('-model_path', type=str,
-                    default='/home/jt/codes/bs/gp/res/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl')
+parser.add_argument('-model', type=str)
+parser.add_argument('-model_path', type=str)
 parser.add_argument('-use_cuda', type=bool, default=True)
 parser.add_argument('-gpu_no', type=str, default='0')
-parser.add_argument('-description', type=str, default='unpreprocessed_ResNet')
+parser.add_argument('-description', type=str, default='')
 parser.add_argument('-threshold', type=float, default=0.9)
-parser.add_argument('-apply_method', type=str, default='apply_loss4D')
-parser.add_argument('-output', type=str, default="./output")
+parser.add_argument('-apply_method', type=str)
+parser.add_argument('-output', type=str)
 parser.add_argument('-repeat', type=int, default=1)
 
 args = parser.parse_args()

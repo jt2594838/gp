@@ -11,37 +11,31 @@ import torch
 import torch.nn as nn
 
 from dataset.H5Dataset import H5Dataset
-from dataset.MapValDataset import MapValDataset
-from dataset.factory import dataset_factory
 import nets.nets as nets
 from process.apply import apply_methods
 
-parser = argparse.ArgumentParser(description='Train a basic classifier')
+parser = argparse.ArgumentParser(description='Use processed pics to both train and validate a classifier')
 parser.add_argument('-batch_size', type=int, default=25)
 parser.add_argument('-workers', type=int, default=1)
 parser.add_argument('-lr', type=float, default=0.01)
 parser.add_argument('-weight_decay', type=float, default=1e-4)
+parser.add_argument('-momentum', type=float, default=0.9)
 parser.add_argument('-epoch', type=int, default=200)
 parser.add_argument('-print_freq', type=int, default=1)
 parser.add_argument('-classes', type=int, default=3)
-parser.add_argument('-train_dir', type=str,
-                    default="/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_0.09455910949409008_unpreprocessed_VGG16_train_l5000.h5.applied")
-parser.add_argument('-val_dir', type=str, default="./data/val_data/")
-parser.add_argument('-dataset', type=str, default='CIFAR_10')
+parser.add_argument('-train_dir', type=str)
+parser.add_argument('-val_dir', type=str)
+parser.add_argument('-dataset', type=str)
 parser.add_argument('-in_channels', type=int, default=1)
 parser.add_argument('-pretrained', type=bool, default=False)
-parser.add_argument('-model', type=str, default='ResNet101')
-parser.add_argument('-momentum', type=float, default=0.9)
-parser.add_argument('-model_path', type=str,
-                    default='/home/jt/codes/bs/nb/src/train/models/VGG16_CIFAR_10_10_10_78.84_98.48.pkl')
-parser.add_argument('-val_map_dir', type=str,
-                    default='/home/jt/codes/bs/nb/src/train/maps/DeeplabS_CIFAR_10_unpreprocessed_0.09455910949409008_VGG16_0.9_79.11_98.59_validate.h5')
+parser.add_argument('-model_name', type=str)
+parser.add_argument('-model_path', type=str)
 parser.add_argument('-use_cuda', type=bool, default=True)
 parser.add_argument('-gpu_no', type=str, default='0')
-parser.add_argument('-description', type=str, default='l5000')
+parser.add_argument('-description', type=str, default='')
 parser.add_argument('-preprocess', type=bool, default=False)
 parser.add_argument('-threshold', type=float, default=0.9)
-parser.add_argument('-apply_method', type=str, default='apply_loss4D')
+parser.add_argument('-apply_method', type=str)
 parser.add_argument('-output', type=str, default="./")
 
 args = parser.parse_args()
@@ -115,23 +109,17 @@ def train(train_loader, model, criterion, optimizer, epoch):
                 data_time=data_time, loss=losses, top1=top1))
 
 
-def validate(val_loader, model, criterion, apply_method=None, threshold=1.0):
+def validate(val_loader, model, criterion):
     batch_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
-    # top5 = AverageMeter()
 
     # switch to evaluate mode
     model.eval()
 
     end = time.time()
-    for i, (input, target, maps) in enumerate(val_loader):
-        for j in range(maps.size(0)):
-            maps[j, :, :] = (maps[j, :, :] - torch.min(maps[j, :, :])) / (
-                    torch.max(maps[j, :, :]) - torch.min(maps[j, :, :]))
-        maps[maps > threshold] = 1
-        maps[maps <= threshold] = 0
-        input = apply_method(input, maps)
+    for i, (input, target) in enumerate(val_loader):
+
 
         target = target.cuda(async=True)
         input_var = torch.autograd.Variable(input, volatile=True)
@@ -189,18 +177,18 @@ def main():
     if not os.path.exists(args.train_dir):
         os.makedirs(args.train_dir)
 
-    model = nets.net_factory[args.model](args.classes, args.pretrained, args.in_channels, classify=True)
-    train_dataset = H5Dataset(args.train_dir, use_transform=False)
+    print('loading model {} '.format(args.model_name))
+    model = nets.classify_net_factory[args.model_name](args.classes, args.pretrained, args.in_channels, classify=True)
+    print('loading training data from {}'.format(args.train_dir))
+    train_dataset = H5Dataset(args.train_dir)
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=False)
 
     criterion = nn.CrossEntropyLoss()
-
     if args.use_cuda:
         model = model.cuda()
         criterion = criterion.cuda()
-
     optimizer = torch.optim.SGD(model.parameters(), args.lr,
                                 momentum=args.momentum,
                                 weight_decay=args.weight_decay)
@@ -208,7 +196,8 @@ def main():
     for i in range(args.epoch):
         train(train_loader, model, criterion, optimizer, i)
 
-    val_dataset = MapValDataset(args.val_map_dir)
+    print('loading validating data from {}'.format(args.val_dir))
+    val_dataset = H5Dataset(args.val_dir)
     val_loader = torch.utils.data.DataLoader(
         val_dataset, batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=False)
