@@ -7,6 +7,7 @@ rectangle division method.
 Using other operators may be a nice extension.
 """
 
+
 def apply_zero(pic, zero_map):
     ret = torch.FloatTensor(pic.size())
     for i in range(ret.size(0)):

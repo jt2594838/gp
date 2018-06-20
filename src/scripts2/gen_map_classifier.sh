@@ -3,9 +3,8 @@ data_dir="/home/jiangtian/code/gp/data/anzhen/az_split.val"
 dataset="H5"
 model_path="/home/jiangtian/code/gp/res_anzhen2/original_model/ResNet101_anzhen_3_200_81.19265792566702.pkl"
 model_name="ResNet"
-apply_method="apply_loss4D"
+apply_method_name="apply_zero4D"
 size=21
-processor_name="zero"
 gen_method_name="rect_rnd"
 output_dir="/home/jiangtian/code/gp/res_anzhen2/train_map2"
 offset=0
@@ -19,9 +18,8 @@ python -u ${python_file} \
         -dataset ${dataset} \
         -model_path ${model_path} \
         -model_name ${model_name} \
-        -apply_method ${apply_method} \
+        -apply_method_name ${apply_method_name} \
         -size ${size}  \
-        -processor_name ${processor_name}  \
         -gen_method_name ${gen_method_name}  \
         -output_dir ${output_dir} \
         -offset  ${offset}  \

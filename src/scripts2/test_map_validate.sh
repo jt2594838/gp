@@ -2,10 +2,9 @@ python_file='train/test_map_validate.py'
 batch_size=1
 classes=3
 dataset="H5"
-# pretrained="-pretrained 1"
 model="ResNet101"
 model_path="/home/jiangtian/code/gp/res_anzhen2/merged_model/ResNet101_anzhen_3_200_79.8767945134909.pkl"
-weak_model_path="/home/jiangtian/code/gp/res_anzhen2/original_model/ResNet101_anzhen_3_100_78.89908029398786.pkl"
+# weak_model_path="/home/jiangtian/code/gp/res_anzhen2/original_model/ResNet101_anzhen_3_100_78.89908029398786.pkl"
 map_dir="/home/jiangtian/code/gp/res_anzhen2/val_map2/"
 # threshold="0,0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99,1.0"
 threshold="1.0"
@@ -17,7 +16,6 @@ python -u ${python_file} \
         -batch_size ${batch_size} \
         -classes ${classes}  \
         -dataset ${dataset} \
-        ${pretrained} \
         -model ${model} \
         -model_path ${model_path} \
 	    -weak_model_path ${weak_model_path}  \

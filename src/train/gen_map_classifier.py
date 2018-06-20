@@ -21,9 +21,8 @@ parser.add_argument('-model_name', type=str)
 parser.add_argument('-use_cuda', type=bool, default=True)
 parser.add_argument('-gpu_no', type=str, default='0')
 parser.add_argument('-description', type=str, default='')
-parser.add_argument('-apply_method', type=str)
+parser.add_argument('-apply_method_name', type=str)
 parser.add_argument('-size', type=int, default=8)
-parser.add_argument('-processor_name', type=str)
 parser.add_argument('-gen_method_name', type=str)
 parser.add_argument('-output_dir', type=str)
 parser.add_argument('-offset', type=int, default=0)
@@ -31,12 +30,12 @@ parser.add_argument('-length', type=int, default=4300)
 parser.add_argument('-update_err', type=bool, default=True)
 
 args = parser.parse_args()
-args.apply_method = apply_methods[args.apply_method]
+args.apply_method = apply_methods[args.apply_method_name]
 args.size = (args.size, args.size)
 args.window_processor = processors[args.processor_name]
 args.gen_method = gen_methods[args.gen_method_name]
 args.output_name = ("%s_%s_%d_%d_%s_%s_%s.h5" % (args.model_name, args.dataset, args.offset, args.length,
-                                              args.processor_name, args.gen_method_name, args.description))
+                                              args.apply_method_name, args.gen_method_name, args.description))
 
 
 def main():

@@ -52,5 +52,5 @@ class H5Dataset(data.Dataset):
         return self.data_size
 
 
-def get_anzhen_dataset(root, **kwargs):
+def get_H5_dataset(root, **kwargs):
     return H5Dataset(root, **kwargs)

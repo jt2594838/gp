@@ -38,8 +38,8 @@ def gen_sensitive_map_rect_greed(model, pic, label, size, criterion, window_proc
         How to process each segment, e.g., set to one or set to zero.
     :param update_err:
         If set to true, then after each successful process (classification error is less than  the standard error), the
-        standard error will be set to the new less error, which means we can find more effective and less non-critical
-        area.
+        standard error will be set to the new less error, which means we can find more effective and fewer non-critical
+        areas..
     :param use_cuda:
         Whether to use GPU or not.
     :return:
@@ -112,8 +112,8 @@ def gen_sensitive_map_rect_greed_rnd(model, pic, label, size, criterion, window_
         How to process each segment, e.g., set to one or set to zero.
     :param update_err:
         If set to true, then after each successful process (classification error is less than  the standard error), the
-        standard error will be set to the new less error, which means we can find more effective and less non-critical
-        area.
+        standard error will be set to the new less error, which means we can find more effective and fewer non-critical
+        areas.
     :param use_cuda:
         Whether to use GPU or not.
     :return:
@@ -178,8 +178,8 @@ def gen_map_superpixel_zero(model, pic, label, size, criterion, update_err=False
         How to process each segment, e.g., set to one or set to zero.
     :param update_err:
         If set to true, then after each successful process (classification error is less than  the standard error), the
-        standard error will be set to the new less error, which means we can find more effective and less non-critical
-        area.
+        standard error will be set to the new less error, which means we can find more effective and fewer non-critical
+        areas.
     :param use_cuda:
         Whether to use GPU or not.
     :param compactness:
@@ -248,8 +248,8 @@ def gen_map_superpixel_zero_rnd(model, pic, label, size, criterion, update_err=F
         How to process each segment, e.g., set to one or set to zero.
     :param update_err:
         If set to true, then after each successful process (classification error is less than  the standard error), the
-        standard error will be set to the new less error, which means we can find more effective and less non-critical
-        area.
+        standard error will be set to the new less error, which means we can find more effective and fewer non-critical
+        areas.
     :param use_cuda:
         Whether to use GPU or not.
     :param compactness:
@@ -326,8 +326,8 @@ def gen_map_superpixel_one(model, pic, label, size, criterion, window_processor,
             How to process each segment, e.g., set to one or set to zero.
         :param update_err:
             If set to true, then after each successful process (classification error is less than  the standard error), the
-            standard error will be set to the new less error, which means we can find more effective and less non-critical
-            area.
+            standard error will be set to the new less error, which means we can find more effective and fewer non-critical
+            areas.
         :param use_cuda:
             Whether to use GPU or not.
         :param compactness:
@@ -403,8 +403,8 @@ def gen_on_set(model, dataset_loader, size, criterion, window_processor, gen_met
         How many inputs should be used to generate process map.
     :param update_err:
             If set to true, then after each successful process (classification error is less than  the standard error), the
-            standard error will be set to the new less error, which means we can find more effective and less non-critical
-            area.
+            standard error will be set to the new less error, which means we can find more effective and fewer non-critical
+            areas.
     :param use_cuda:
             Whether to use GPU or not.
     :return:
@@ -451,7 +451,7 @@ def gen_on_set(model, dataset_loader, size, criterion, window_processor, gen_met
 
 
 gen_methods = {
-    'rect_greed': gen_sensitive_map_rect_greed,
+    'rect': gen_sensitive_map_rect_greed,
     'rect_rnd': gen_sensitive_map_rect_greed_rnd,
     'super_pixel_zero': gen_map_superpixel_zero,
     'super_pixel_zero_rnd': gen_sensitive_map_rect_greed_rnd,
